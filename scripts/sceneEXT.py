@@ -2,7 +2,7 @@ class SceneExtension():
 
     def __init__(self, my_op):
         self.Me = my_op
-        # test4
+        # test5
         self.onStop = { 'operator': None, 'method': None }
         self.onStart = { 'operator': None, 'method': None }
         self.Me.store( 'Output', op('../out1') )
@@ -23,6 +23,7 @@ class SceneExtension():
             self.Me.store( 'Stopped', False )
             self.Me.store( 'Starting', True )
             self.print('starting')
+            self.onStarted = { 'operator': operator, 'method': method }
             # - reset physics
             self.enableNodes()
             # - reinit the scene in any other ways
@@ -40,6 +41,7 @@ class SceneExtension():
             self.Me.store( 'Started', False )
 
             self.print('stopping')
+            self.onStopped = { 'operator': operator, 'method': method }
             # method that starts the scene
             # - fade out scene from black
             fadeIO = op('../fadeIO')
@@ -52,12 +54,15 @@ class SceneExtension():
         return
 
     def OnFadeIn(self):
+        self.print('onfadein')
         self.Me.store( 'Started', True )
         self.Me.store( 'Starting', False )
         self.Me.store( 'Stopped', False )
+        self.callback( self.onStarted )
         return
 
     def OnFadeOut(self):
+        self.print('onfadeout')
         self.finishStopping()
         return
     
@@ -65,6 +70,7 @@ class SceneExtension():
         self.disableNodes()
         self.Me.store( 'Stopping', False )
         self.Me.store( 'Stopped', True )
+        self.callback( self.onStopped )
         return
 
     def disableNodes(self):

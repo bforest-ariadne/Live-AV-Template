@@ -1,0 +1,129 @@
+class PerformExtension():
+
+    def __init__(self, my_op):
+        self.Me = my_op
+        self.name = my_op.name
+        print('name: ', self.name )
+        self.input = op('../input')
+        self.Me.store( 'Input', op('../input') )
+        self.onStop = { 'operator': None, 'method': None }
+        self.onStart = { 'operator': None, 'method': None }
+        # self.Me.store( 'Output', op('../out1') )
+        self.nodes = []
+        self.scenes = []
+        self.GetScenes()
+        # self.StopAllScenes()
+        self.CurrentScene = op('../scene1')
+        self.PreviousScene = None
+        self.GetCurrentScene()
+
+        return
+
+    def Test(self):
+        self.print('test scene extension')
+        return
+    def Start(self, operator=None, method=None):
+        return
+
+    def Stop(self, operator=None, method=None):
+        return
+
+    def ChangeScene(self, index = None, name = 'scene1'):
+        self.newScene = False
+        if type(index) == int:
+            # self.print( self.scenes[index].name )
+            self.newScene = self.scenes[index]
+        elif type( index ) == str and index.isnumeric():
+            # self.print( self.scenes[ int(index) ].name )
+            self.newScene = self.scenes[ int(index) ]
+        elif type(name) == str:
+            for scene in self.scenes:
+                if scene.name == name:
+                    # self.print( scene.name )
+                    self.newScene = scene
+        if self.newScene:
+            self.startSceneChange()
+        return self.newScene.name
+    
+    def startSceneChange(self):
+        # stop current scene -
+        self.print( 'stopping current scene' + self.CurrentScene.name )
+        self.CurrentScene.Stop( self, 'ContinueSceneChange' )
+        return
+    def GetCurrentScene(self):
+        for scene in self.scenes:
+            if scene.fetch( 'Started'):
+                self.CurrentScene = scene
+        return
+
+    def ContinueSceneChange(self):
+        self.print( 'continueSceneChange' )
+        self.Me.store('SceneStart', False )
+        # disconnect on stop
+        self.CurrentScene.outputConnectors[0].disconnect()
+        # change current scene to previous scene
+        self.PreviousScene = self.CurrentScene
+        # set new scene to current scene
+        self.CurrentScene = self.newScene
+        # connect current scene to input
+        self.CurrentScene.outputConnectors[0].connect( self.input )
+        # start current scene
+        # update current scene started on start
+        self.CurrentScene.Start( self, 'OnCurrentSceneStart' )
+        return
+
+    def OnCurrentSceneStart(self):
+        self.Me.store('SceneStart', True )
+        return
+    
+
+    def StopAllScenes(self):
+        for scene in self.scenes:
+            if scene.fetch('Started'):
+                scene.Stop()
+        return
+
+    def disableNodes(self):
+        for node in self.nodes:
+            node.bypass = True
+        return
+
+    def enableNodes(self):
+        for node in self.nodes:
+            node.bypass = False
+        return
+
+    def GetScenes(self):
+        findScene = op('opfind_scene')
+        scenePaths = findScene.cells('scene*', 'path')
+        self.scenes = []
+        for paths in scenePaths:    
+            self.scenes.append( op( paths ))
+        return
+        
+    def OnPulse(self, par):
+        if hasattr( self.Me, par.name ):
+            function = getattr( self.Me, par.name )
+            function()
+        return
+
+    def OnValueChange(self, par):
+        self.Me.store( par.name, par.eval() )
+        return
+
+    def print(self, message):
+        print( self.name + ': ', message )
+        return
+
+    # method to call callbacks
+    def callback(self, config):
+        if config['operator'] and config['method']:
+            if hasattr( config['operator'], config['method'] ):
+                function = getattr(config['operator'], config['method'])
+                if callable( function ):
+                    function()
+            else:
+                self.print('FADEIO: callback no fire')
+                self.print('operator: ', config['operator'])
+                self.print('method: ', config['method'])
+        return
