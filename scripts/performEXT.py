@@ -12,7 +12,6 @@ class PerformExtension():
         self.nodes = []
         self.scenes = []
         self.GetScenes()
-        # self.StopAllScenes()
         self.CurrentScene = op('../scene1')
         self.PreviousScene = None
         self.GetCurrentScene()
@@ -51,9 +50,19 @@ class PerformExtension():
         return self.CurrentScene.Stop( self, 'ContinueSceneChange' )
 
     def GetCurrentScene(self):
+        startedCount = 0
         for scene in self.scenes:
             if scene.fetch( 'Started'):
+                startedCount += 1
                 self.CurrentScene = scene
+        if startedCount == 1:
+            return True
+        else:
+            self.stopAllScenes()
+            self.disconnectAllScenes()
+            self.CurrentScene = self.scenes[0]
+            self.CurrentScene.outputConnectors[0].connect( self.input )
+            return self.CurrentScene.Start()
         return
 
     def ContinueSceneChange(self):
@@ -77,10 +86,14 @@ class PerformExtension():
         return
     
 
-    def StopAllScenes(self):
+    def stopAllScenes(self):
         for scene in self.scenes:
             if scene.fetch('Started'):
                 scene.Stop()
+        return
+    def disconnectAllScenes(self):
+        for scene in self.scenes:
+            scene.outputConnectors[0].disconnect()
         return
 
     def disableNodes(self):
