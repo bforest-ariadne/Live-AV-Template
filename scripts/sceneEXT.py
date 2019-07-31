@@ -1,3 +1,4 @@
+op = op  # pylint:disable=invalid-name,used-before-assignment
 class SceneExtension():
 
     def __init__(self, my_op):
@@ -9,6 +10,8 @@ class SceneExtension():
         self.springs = []
         self.GetSprings()
         self.name = my_op.name
+        # self.Page = self.Me.customPages[0]
+        self.states = [ 'Starting', 'Started', 'Stopping', 'Stopped' ]
 
         self.selInputs = []
         self.GetSelInputs()
@@ -109,6 +112,11 @@ class SceneExtension():
             self.selInputs.append( op( paths ))
         return
         
+    def Lockfades(self):
+        self.Me.par.Fadein.readOnly = self.Me.par.Lockfades.val
+        self.Me.par.Fadeout.readOnly = self.Me.par.Lockfades.val
+        return
+        
     def OnPulse(self, par):
         if hasattr( self.Me, par.name ):
             function = getattr( self.Me, par.name )
@@ -117,6 +125,9 @@ class SceneExtension():
 
     def OnValueChange(self, par):
         self.Me.store( par.name, par.eval() )
+        if hasattr( self.Me, par.name ):
+            function = getattr( self.Me, par.name )
+            function()
         return
 
     def print(self, message):
@@ -132,6 +143,6 @@ class SceneExtension():
                     function()
             else:
                 self.print('FADEIO: callback no fire')
-                self.print('operator: ', config['operator'])
-                self.print('method: ', config['method'])
+                self.print('operator: ' + config['operator'])
+                self.print('method: ' + config['method'])
         return

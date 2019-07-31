@@ -1,3 +1,5 @@
+op = op  # pylint:disable=invalid-name,used-before-assignment
+
 class PerformExtension():
 
     def __init__(self, my_op):
@@ -8,24 +10,29 @@ class PerformExtension():
         self.Me.store( 'Input', op('../input') )
         self.onStop = { 'operator': None, 'method': None }
         self.onStart = { 'operator': None, 'method': None }
-        # self.Me.store( 'Output', op('../out1') )
         self.nodes = []
         self.scenes = []
         self.GetScenes()
         self.CurrentScene = op('../scene1')
         self.PreviousScene = None
         self.GetCurrentScene()
+        self.Me.store( 'Nextsceneindex', 1 )
 
         return
 
     def Test(self):
-        self.print('test scene extension')
+        self.print('test extension')
         return
     def Start(self, operator=None, method=None):
         return
 
     def Stop(self, operator=None, method=None):
         return
+    def getNextIndex(self):
+        return self.Me.fetch( 'Nextsceneindex' )
+    
+    def Changetonextscene(self):
+        return self.ChangeScene( self.getNextIndex() )
 
     def ChangeScene(self, index = None, name = 'scene1'):
         self.newScene = False
@@ -41,6 +48,9 @@ class PerformExtension():
                     # self.print( scene.name )
                     self.newScene = scene
         if self.newScene:
+            if not self.newScene.par.Lockfades.eval():
+                self.newScene.par.Fadein = self.Me.fetch('Fadein')
+                self.newScene.par.Fadeout = self.Me.fetch('Fadeout')
             return self.startSceneChange()
         return False
     
@@ -50,6 +60,7 @@ class PerformExtension():
         return self.CurrentScene.Stop( self, 'ContinueSceneChange' )
 
     def GetCurrentScene(self):
+        self.GetScenes()
         startedCount = 0
         for scene in self.scenes:
             if scene.fetch( 'Started'):
@@ -112,16 +123,30 @@ class PerformExtension():
         self.scenes = []
         for paths in scenePaths:    
             self.scenes.append( op( paths ))
-        return
+        self.Me.store( "Scenes", self.scenes )
+        return self.scenes
+    
+    # def Currentscene(self):
+    #     self.print('Currentscene')
+    #     return
         
     def OnPulse(self, par):
         if hasattr( self.Me, par.name ):
             function = getattr( self.Me, par.name )
-            function()
+            if callable( function ):
+                function()
+            else:
+                self.print( 'attr is not callable' )
         return
 
     def OnValueChange(self, par):
         self.Me.store( par.name, par.eval() )
+        if hasattr( self.Me, par.name ):
+            function = getattr( self.Me, par.name )
+            if callable( function ):
+                function()
+            else:
+                self.print( 'attr is not callable' )
         return
 
     def print(self, message):
@@ -137,6 +162,6 @@ class PerformExtension():
                     function()
             else:
                 self.print('FADEIO: callback no fire')
-                self.print('operator: ', config['operator'])
-                self.print('method: ', config['method'])
+                self.print('operator: ' + config['operator'])
+                self.print('method: ' + config['method'])
         return
