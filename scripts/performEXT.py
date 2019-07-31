@@ -42,14 +42,14 @@ class PerformExtension():
                     # self.print( scene.name )
                     self.newScene = scene
         if self.newScene:
-            self.startSceneChange()
-        return self.newScene.name
+            return self.startSceneChange()
+        return False
     
     def startSceneChange(self):
         # stop current scene -
         self.print( 'stopping current scene' + self.CurrentScene.name )
-        self.CurrentScene.Stop( self, 'ContinueSceneChange' )
-        return
+        return self.CurrentScene.Stop( self, 'ContinueSceneChange' )
+
     def GetCurrentScene(self):
         for scene in self.scenes:
             if scene.fetch( 'Started'):

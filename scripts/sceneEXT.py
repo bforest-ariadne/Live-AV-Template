@@ -31,8 +31,9 @@ class SceneExtension():
             # - fade in scene from black
             fadeIO = op('../fadeIO')
             fadeIO.Fadein(self, 'OnFadeIn')
-            # - update started state in storage
-            # - run a 'started' callback
+            return True
+        else:
+            return False
         return
 
     def Stop(self, operator=None, method=None):
@@ -46,18 +47,20 @@ class SceneExtension():
             # - fade out scene from black
             fadeIO = op('../fadeIO')
             fadeIO.Fadeout(self, 'OnFadeOut')
-            # - stop any other processing
-            # - update states in storage
 
-            # - run stopped callback
+            return True
+        else:
+            return False
 
         return
 
     def OnFadeIn(self):
         self.print('onfadein')
+        # - update started state in storage
         self.Me.store( 'Started', True )
         self.Me.store( 'Starting', False )
         self.Me.store( 'Stopped', False )
+        # - run a 'started' callback
         self.callback( self.onStarted )
         return
 
@@ -67,9 +70,12 @@ class SceneExtension():
         return
     
     def finishStopping(self):
+        # - stop any other processing
         self.disableNodes()
+        # - update states in storage
         self.Me.store( 'Stopping', False )
         self.Me.store( 'Stopped', True )
+        # - run stopped callback
         self.callback( self.onStopped )
         return
 
