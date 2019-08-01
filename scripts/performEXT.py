@@ -13,12 +13,12 @@ class PerformExtension():
         self.onStart = { 'operator': None, 'method': None }
         self.nodes = []
         self.scenes = []
-        # self.GetScenes()
+        self.GetScenes()
         self.CurrentScene( op('../scene1') )
         self.PreviousScene = None
         self.StartCurrentScene()
-        if self.Me.fetch( 'Nextsceneindex' ) == self.CurrentScene().digits - 1:
-            self.Me.store( 'Nextsceneindex', self.CurrentScene().digits )
+        if self.Me.fetch( 'Nextsceneindex' ) == self.CurrentScene().Index:
+            self.Me.store( 'Nextsceneindex', self.CurrentScene().Index + 1 )
         return
 
 
@@ -63,7 +63,7 @@ class PerformExtension():
         return self.CurrentScene().Stop( self, 'ContinueSceneChange' )
 
     def StartCurrentScene(self):
-        self.GetScenes()
+        # self.GetScenes()
         startedCount = 0
         for scene in self.scenes:
             if scene != self.CurrentScene() and scene.State() == 'Started':
@@ -76,7 +76,7 @@ class PerformExtension():
             self.disconnectAllScenes()
             # self.CurrentScene( self.scenes[0] )
             self.CurrentScene().outputConnectors[0].connect( self.input )
-            self.Me.par.Currentsceneindex = self.CurrentScene().digits - 1
+            self.Me.par.Currentsceneindex = self.CurrentScene().Index
             if self.CurrentScene().State() == 'Stopped':
                 self.CurrentScene().Start( self, 'OnCurrentSceneStart' )
             # elif self.CurrentScene().State() == 'Stopping':
@@ -93,7 +93,7 @@ class PerformExtension():
         self.PreviousScene = self.CurrentScene()
         # set new scene to current scene
         self.CurrentScene( self.newScene )
-        self.Me.par.Currentsceneindex = self.newScene.digits - 1
+        self.Me.par.Currentsceneindex = self.newScene.Index
         # connect current scene to input
         self.CurrentScene().outputConnectors[0].connect( self.input )
         # start current scene
@@ -135,8 +135,12 @@ class PerformExtension():
         findScene = op('opfind_scene')
         scenePaths = findScene.cells('scene*', 'path')
         self.scenes = []
-        for paths in scenePaths:    
-            self.scenes.append( op( paths ))
+        i = 0
+        for paths in scenePaths:
+            scene = op( paths )
+            scene.Index = i
+            self.scenes.append( scene )
+            i += 1
         self.Me.store( "Scenes", self.scenes )
         self.Me.par.Nextsceneindex.normMax = len(self.scenes) - 1
         self.Me.par.Currentsceneindex.normMax = len(self.scenes) -1
@@ -147,7 +151,7 @@ class PerformExtension():
             return self.Me.fetch('CurrentScene')
         else:
             self.Me.store( 'CurrentScene', value )
-            self.Me.par.Currentsceneindex.val = value.digits - 1
+            self.Me.par.Currentsceneindex.val = value.Index
         return value
         
     def OnPulse(self, par):
