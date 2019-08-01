@@ -12,12 +12,11 @@ class PerformExtension():
         self.onStart = { 'operator': None, 'method': None }
         self.nodes = []
         self.scenes = []
-        self.GetScenes()
+        # self.GetScenes()
         self.CurrentScene = op('../scene1')
         self.PreviousScene = None
         self.GetCurrentScene()
         self.Me.store( 'Nextsceneindex', 1 )
-
         return
 
     def Test(self):
@@ -50,7 +49,8 @@ class PerformExtension():
         if self.newScene:
             if not self.newScene.par.Lockfades.eval():
                 self.newScene.par.Fadein = self.Me.fetch('Fadein')
-                self.newScene.par.Fadeout = self.Me.fetch('Fadeout')
+            if not self.CurrentScene.par.Lockfades.eval():
+                self.CurrentScene.par.Fadeout = self.Me.fetch('Fadeout')
             return self.startSceneChange()
         return False
     
@@ -63,7 +63,7 @@ class PerformExtension():
         self.GetScenes()
         startedCount = 0
         for scene in self.scenes:
-            if scene.fetch( 'Started'):
+            if scene.State() == 'Started':
                 startedCount += 1
                 self.CurrentScene = scene
         if startedCount == 1:
@@ -73,7 +73,12 @@ class PerformExtension():
             self.disconnectAllScenes()
             self.CurrentScene = self.scenes[0]
             self.CurrentScene.outputConnectors[0].connect( self.input )
-            return self.CurrentScene.Start()
+            self.Me.par.Currentsceneindex = self.CurrentScene.digits - 1
+            if self.CurrentScene.State() == 'Stopped':
+                self.CurrentScene.Start( self, 'OnCurrentSceneStart' )
+            # elif self.CurrentScene.State() == 'Stopping':
+            #     self.CurrentScene.onStopped = { 'operator': self.CurrentScene, 'method': 'Start' }
+            return 
         return
 
     def ContinueSceneChange(self):
@@ -85,6 +90,7 @@ class PerformExtension():
         self.PreviousScene = self.CurrentScene
         # set new scene to current scene
         self.CurrentScene = self.newScene
+        self.Me.par.Currentsceneindex = self.newScene.digits - 1
         # connect current scene to input
         self.CurrentScene.outputConnectors[0].connect( self.input )
         # start current scene
@@ -96,10 +102,9 @@ class PerformExtension():
         self.Me.store('SceneStart', True )
         return
     
-
     def stopAllScenes(self):
         for scene in self.scenes:
-            if scene.fetch('Started'):
+            if scene.State() == 'Started':
                 scene.Stop()
         return
     def disconnectAllScenes(self):
@@ -124,11 +129,13 @@ class PerformExtension():
         for paths in scenePaths:    
             self.scenes.append( op( paths ))
         self.Me.store( "Scenes", self.scenes )
-        return self.scenes
+        self.Me.par.Nextsceneindex.normMax = len(self.scenes) - 1
+        self.Me.par.Currentsceneindex.normMax = len(self.scenes) -1
+        return
     
-    # def Currentscene(self):
-    #     self.print('Currentscene')
-    #     return
+    def Currentscene(self):
+        self.print('Currentscene')
+        return
         
     def OnPulse(self, par):
         if hasattr( self.Me, par.name ):

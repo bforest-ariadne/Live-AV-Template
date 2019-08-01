@@ -11,10 +11,15 @@ class SceneExtension():
         self.GetSprings()
         self.name = my_op.name
         # self.Page = self.Me.customPages[0]
-        self.states = [ 'Starting', 'Started', 'Stopping', 'Stopped' ]
+        self.States = [ 'Starting', 'Started', 'Stopping', 'Stopped' ]
+        self.Me.par.State.menuLabels = self.States
+        self.Me.par.State.menuNames = self.States
+        self.onStopped = {}
 
         self.selInputs = []
         self.GetSelInputs()
+        self.State( 'Started' )
+        self.Stop()
         return
 
     def Test(self):
@@ -22,9 +27,11 @@ class SceneExtension():
         return
     def Start(self, operator=None, method=None):
         # method that starts the scene
-        if not self.Me.fetch( 'Starting' ) and not self.Me.fetch( 'Started' ):
-            self.Me.store( 'Stopped', False )
-            self.Me.store( 'Starting', True )
+        if self.State() == 'Stopped':
+            self.State( 'Starting' )
+        # if not self.Me.fetch( 'Starting' ) and not self.Me.fetch( 'Started' ):
+        #     self.Me.store( 'Stopped', False )
+        #     self.Me.store( 'Starting', True )
             self.print('starting')
             self.onStarted = { 'operator': operator, 'method': method }
             # - reset physics
@@ -40,9 +47,11 @@ class SceneExtension():
         return
 
     def Stop(self, operator=None, method=None):
-        if not self.Me.fetch( 'Stopping' ) and not self.Me.fetch( 'Stopped' ):
-            self.Me.store( 'Stopping', True )
-            self.Me.store( 'Started', False )
+        if self.State() == 'Started':
+            self.State( 'Stopping' )
+        # if not self.Me.fetch( 'Stopping' ) and not self.Me.fetch( 'Stopped' ):
+        #     self.Me.store( 'Stopping', True )
+        #     self.Me.store( 'Started', False )
 
             self.print('stopping')
             self.onStopped = { 'operator': operator, 'method': method }
@@ -60,9 +69,10 @@ class SceneExtension():
     def OnFadeIn(self):
         self.print('onfadein')
         # - update started state in storage
-        self.Me.store( 'Started', True )
-        self.Me.store( 'Starting', False )
-        self.Me.store( 'Stopped', False )
+        # self.Me.store( 'Started', True )
+        # self.Me.store( 'Starting', False )
+        # self.Me.store( 'Stopped', False )
+        self.State('Started')
         # - run a 'started' callback
         self.callback( self.onStarted )
         return
@@ -76,8 +86,9 @@ class SceneExtension():
         # - stop any other processing
         self.disableNodes()
         # - update states in storage
-        self.Me.store( 'Stopping', False )
-        self.Me.store( 'Stopped', True )
+        # self.Me.store( 'Stopping', False )
+        # self.Me.store( 'Stopped', True )
+        self.State( 'Stopped' )
         # - run stopped callback
         self.callback( self.onStopped )
         return
@@ -115,6 +126,14 @@ class SceneExtension():
     def Lockfades(self):
         self.Me.par.Fadein.readOnly = self.Me.par.Lockfades.val
         self.Me.par.Fadeout.readOnly = self.Me.par.Lockfades.val
+        return
+
+    def State(self, value = None):
+        if value is None:
+            return self.Me.fetch('State')
+        else:
+            self.Me.store( 'State', value )
+            self.Me.par.State.val = value
         return
         
     def OnPulse(self, par):
