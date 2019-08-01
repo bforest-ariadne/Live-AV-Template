@@ -14,12 +14,15 @@ class SceneExtension():
         self.States = [ 'Starting', 'Started', 'Stopping', 'Stopped' ]
         self.Me.par.State.menuLabels = self.States
         self.Me.par.State.menuNames = self.States
-        self.onStopped = {}
+        self.onStopped = { 'operator': None, 'method': None }
+        self.onStarted = { 'operator': None, 'method': None }
 
         self.selInputs = []
         self.GetSelInputs()
-        self.State( 'Started' )
-        self.Stop()
+        self.print('init')
+        # self.State( 'Stopped' )
+        self.finishStopping()
+        # self.Stop()
         return
 
     def Test(self):
@@ -96,6 +99,7 @@ class SceneExtension():
         # - run stopped callback
         self.callback( self.onStopped )
         return
+
 
     def disableNodes(self):
         op('../post').par.Bypass = True

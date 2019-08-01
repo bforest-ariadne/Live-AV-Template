@@ -16,8 +16,9 @@ class PerformExtension():
         # self.GetScenes()
         self.CurrentScene = op('../scene1')
         self.PreviousScene = None
-        self.GetCurrentScene()
-        self.Me.store( 'Nextsceneindex', 1 )
+        self.StartCurrentScene()
+        if self.Me.fetch( 'Nextsceneindex' ) == self.CurrentScene.digits - 1:
+            self.Me.store( 'Nextsceneindex', self.CurrentScene.digits )
 
         return
 
@@ -61,19 +62,19 @@ class PerformExtension():
         self.print( 'stopping current scene' + self.CurrentScene.name )
         return self.CurrentScene.Stop( self, 'ContinueSceneChange' )
 
-    def GetCurrentScene(self):
+    def StartCurrentScene(self):
         self.GetScenes()
         startedCount = 0
         for scene in self.scenes:
-            if scene.State() == 'Started':
+            if scene != self.CurrentScene and scene.State() == 'Started':
                 startedCount += 1
-                self.CurrentScene = scene
-        if startedCount == 1:
+        self.print('startedCount: ' + str(startedCount) )
+        if startedCount == 1 and self.CurrentScene.Start() == "Started":
             return True
         else:
             self.stopAllScenes()
             self.disconnectAllScenes()
-            self.CurrentScene = self.scenes[0]
+            # self.CurrentScene = self.scenes[0]
             self.CurrentScene.outputConnectors[0].connect( self.input )
             self.Me.par.Currentsceneindex = self.CurrentScene.digits - 1
             if self.CurrentScene.State() == 'Stopped':
@@ -104,14 +105,20 @@ class PerformExtension():
         self.Me.store('SceneStart', True )
         return
     
+
     def stopAllScenes(self):
+        print('stop all except', self.CurrentScene.name )
         for scene in self.scenes:
-            if scene.State() == 'Started':
-                scene.Stop()
+            if scene != self.CurrentScene:
+                if scene.State() == 'Started':
+                    print( scene.name, scene.State() )
+                    scene.Stop()
         return
     def disconnectAllScenes(self):
+        print('dissconnect all except', self.CurrentScene.name )
         for scene in self.scenes:
-            scene.outputConnectors[0].disconnect()
+            if scene != self.CurrentScene:
+                scene.outputConnectors[0].disconnect()
         return
 
     def disableNodes(self):
@@ -133,10 +140,6 @@ class PerformExtension():
         self.Me.store( "Scenes", self.scenes )
         self.Me.par.Nextsceneindex.normMax = len(self.scenes) - 1
         self.Me.par.Currentsceneindex.normMax = len(self.scenes) -1
-        return
-    
-    def Currentscene(self):
-        self.print('Currentscene')
         return
         
     def OnPulse(self, par):
