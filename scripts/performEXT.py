@@ -6,6 +6,7 @@ class PerformExtension():
         self.Me = my_op
         self.name = my_op.name
         print('name: ', self.name )
+        #test7
         self.input = op('../input')
         self.Me.store( 'Input', op('../input') )
         self.onStop = { 'operator': None, 'method': None }
@@ -17,6 +18,7 @@ class PerformExtension():
         self.PreviousScene = None
         self.GetCurrentScene()
         self.Me.store( 'Nextsceneindex', 1 )
+
         return
 
     def Test(self):

@@ -1,6 +1,6 @@
 op = op  # pylint:disable=invalid-name,used-before-assignment
 
-class PerformExtension():
+class PreShowExtension():
 
     def __init__(self, my_op):
         self.Me = my_op
@@ -8,6 +8,7 @@ class PerformExtension():
         print('name: ', self.name )
         self.onStop = { 'operator': None, 'method': None }
         self.onStart = { 'operator': None, 'method': None }
+        self.createParameters()
         return
 
     def Test(self):
@@ -18,9 +19,17 @@ class PerformExtension():
 
     def Stop(self, operator=None, method=None):
         return
-        
-    def getNextIndex(self):
-        return self.Me.fetch( 'Nextsceneindex' )
+
+    def createParameters(self):
+        self.page = self.Me.appendCustomPage('Settings')
+        start = self.page.appendPulse( 'Start', label = 'Start')
+        stop = self.page.appendPulse( 'Stop', label = 'Stop')
+        Fadein = self.page.appendFloat( 'Fadein', label = 'Fadein')
+        debug(Fadein)
+        # Fadein.default = 5
+        # Fadein.normMax = 10
+        Fadeout = self.page.appendFloat( 'Fadeout', label = 'Fadeout')
+        return
         
     def OnPulse(self, par):
         if hasattr( self.Me, par.name ):
