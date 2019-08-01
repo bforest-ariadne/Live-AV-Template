@@ -16,13 +16,13 @@ class SceneExtension():
         self.Me.par.State.menuNames = self.States
         self.onStopped = { 'operator': None, 'method': None }
         self.onStarted = { 'operator': None, 'method': None }
+        self.fadeIO = op('../fadeIO')
 
         self.selInputs = []
         self.GetSelInputs()
         self.print('init')
-        # self.State( 'Stopped' )
+        self.fadeIO.ImmediateOut()
         self.finishStopping()
-        # self.Stop()
         return
 
     def Test(self):
@@ -42,7 +42,7 @@ class SceneExtension():
             # - reinit the scene in any other ways
             # - update inited state in storage
             # - fade in scene from black
-            fadeIO = op('../fadeIO')
+            fadeIO = self.fadeIO
             fadeInSuccess = fadeIO.Fadein(self, 'OnFadeIn', self.Me.par.Fadein)
             if fadeInSuccess == False:
                 self.OnFadeIn()
@@ -62,7 +62,7 @@ class SceneExtension():
             self.onStopped = { 'operator': operator, 'method': method }
             # method that starts the scene
             # - fade out scene from black
-            fadeIO = op('../fadeIO')
+            fadeIO = self.fadeIO
             fadeOutSuccess = fadeIO.Fadeout(self, 'OnFadeOut', self.Me.par.Fadeout)
             if fadeOutSuccess == False:
                 self.OnFadeOut()
