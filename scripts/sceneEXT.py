@@ -94,6 +94,7 @@ class SceneExtension():
         return
 
     def disableNodes(self):
+        op('../post').par.Bypass = True
         for node in self.springs:
             node.bypass = True
         for node in self.selInputs:
@@ -101,6 +102,7 @@ class SceneExtension():
         return
 
     def enableNodes(self):
+        op('../post').par.Bypass = False
         for node in self.springs:
             node.bypass = False
         for node in self.selInputs:
