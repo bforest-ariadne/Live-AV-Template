@@ -6,7 +6,7 @@ class PerformExtension():
         self.Me = my_op
         self.name = my_op.name
         print('name: ', self.name )
-        #test9
+        #test3
         self.input = op('../input')
         self.Me.store( 'Input', op('../input') )
         self.onStop = { 'operator': None, 'method': None }
