@@ -40,7 +40,9 @@ class SceneExtension():
             # - update inited state in storage
             # - fade in scene from black
             fadeIO = op('../fadeIO')
-            fadeIO.Fadein(self, 'OnFadeIn', self.Me.par.Fadein)
+            fadeInSuccess = fadeIO.Fadein(self, 'OnFadeIn', self.Me.par.Fadein)
+            if fadeInSuccess == False:
+                self.OnFadeIn()
             return True
         else:
             return False
@@ -58,7 +60,9 @@ class SceneExtension():
             # method that starts the scene
             # - fade out scene from black
             fadeIO = op('../fadeIO')
-            fadeIO.Fadeout(self, 'OnFadeOut', self.Me.par.Fadeout)
+            fadeOutSuccess = fadeIO.Fadeout(self, 'OnFadeOut', self.Me.par.Fadeout)
+            if fadeOutSuccess == False:
+                self.OnFadeOut()
 
             return True
         else:
