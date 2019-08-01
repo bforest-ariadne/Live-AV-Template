@@ -16,21 +16,23 @@ class PreShowExtension():
         self.print('test extension')
         return
     def Start(self, operator=None, method=None):
+        fadeIO = op('../fadeIO')
+        fadeInSuccess = fadeIO.Fadein()
         return
 
 
     def Stop(self, operator=None, method=None):
+        fadeIO = op('../fadeIO')
+        fadeOutSuccess = fadeIO.Fadeout()
         return
 
     def createParameters(self):
+        self.Me.destroyCustomPars()
         self.page = self.Me.appendCustomPage('Settings')
         start = self.page.appendPulse( 'Start', label = 'Start')
         stop = self.page.appendPulse( 'Stop', label = 'Stop')
-        Fadein = self.page.appendFloat( 'Fadein', label = 'Fadein')
-        debug(Fadein)
-        # Fadein.default = 5
-        # Fadein.normMax = 10
-        Fadeout = self.page.appendFloat( 'Fadeout', label = 'Fadeout')
+        # Fadein = self.page.appendFloat( 'Fadein', label = 'Fadein')
+        # Fadeout = self.page.appendFloat( 'Fadeout', label = 'Fadeout')
         return
         
     def OnPulse(self, par):
