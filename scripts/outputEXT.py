@@ -1,4 +1,5 @@
 op = op  # pylint:disable=invalid-name,used-before-assignment
+root = root  # pylint:disable=invalid-name,used-before-assignment
 
 from TDStoreTools import StorageManager # deeply dependable collections/storage
 TDF = op.TDModules.mod.TDFunctions # utility functions
@@ -18,20 +19,35 @@ class OutputExtension():
     def Test(self):
         self.print('test extension')
         return
-    def Start(self, operator=None, method=None):
-        # fadeIO = op('../fadeIO')
-        # fadeInSuccess = fadeIO.Fadein()
+
+    def Setmodegoal(self):
+        # change Modegoal var
+        root.setVar( 'Modegoal', self.Me.fetch('Setmodegoal') )
+        
+        if root.var( 'Mode' ) != root.var( 'Modegoal' ):
+            # send stop to current mode with stop callback
+            self.OnModeStop()
+
         return
-
-
-    def Stop(self, operator=None, method=None):
-        # fadeIO = op('../fadeIO')
-        # fadeOutSuccess = fadeIO.Fadeout()
+    def OnModeStop(self):
+        # in stop callback switch output display to modegoal
+        self.Me.par.opviewer = root.var( 'Modegoal' )
+        # send start to modegoal with start callback
+        self.OnModeStart()
+        return
+    
+    def OnModeStart(self):
+        # change mode to modegoal
+        root.setVar( 'Mode', root.var( 'Modegoal' ) )
+        # change modegoal to None
+        root.setVar( 'Modegoal', 'None' )
         return
 
     def createParameters(self):
-        self.Me.destroyCustomPars()
-        self.page = self.Me.appendCustomPage('Settings')
+        # self.Me.destroyCustomPars()
+        # self.page = self.Me.appendCustomPage('Settings')
+        # self.page.appendPulse( 'Test', label='Test', replace=True )
+        # self.page.appendMenu( )
         # start = self.page.appendPulse( 'Start', label = 'Start')
         # stop = self.page.appendPulse( 'Stop', label = 'Stop')
         # Fadein = self.page.appendFloat( 'Fadein', label = 'Fadein')
