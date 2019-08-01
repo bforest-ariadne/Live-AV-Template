@@ -4,6 +4,7 @@ class PreShowExtension():
 
     def __init__(self, my_op):
         self.Me = my_op
+        # test6
         self.name = my_op.name
         print('name: ', self.name )
         self.onStop = { 'operator': None, 'method': None }
