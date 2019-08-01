@@ -25,7 +25,7 @@ class SceneExtension():
     def Test(self):
         self.print('test scene extension')
         return
-    def Start(self, operator=None, method=None):
+    def Start(self, operator=None, method=None, inTime=None, outTime=None):
         # method that starts the scene
         if self.State() == 'Stopped':
             self.State( 'Starting' )
@@ -40,7 +40,7 @@ class SceneExtension():
             # - update inited state in storage
             # - fade in scene from black
             fadeIO = op('../fadeIO')
-            fadeIO.Fadein(self, 'OnFadeIn')
+            fadeIO.Fadein(self, 'OnFadeIn', self.Me.par.Fadein)
             return True
         else:
             return False
@@ -58,7 +58,7 @@ class SceneExtension():
             # method that starts the scene
             # - fade out scene from black
             fadeIO = op('../fadeIO')
-            fadeIO.Fadeout(self, 'OnFadeOut')
+            fadeIO.Fadeout(self, 'OnFadeOut', self.Me.par.Fadeout)
 
             return True
         else:
