@@ -3,7 +3,7 @@ class SceneExtension():
 
     def __init__(self, my_op):
         self.Me = my_op
-        # test5
+        # test7
         self.onStop = { 'operator': None, 'method': None }
         self.onStart = { 'operator': None, 'method': None }
         self.Me.store( 'Output', op('../out1') )
