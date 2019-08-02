@@ -11,28 +11,53 @@ class PerformExtension():
         self.Me.store( 'Input', op('../input') )
         self.onStop = { 'operator': None, 'method': None }
         self.onStart = { 'operator': None, 'method': None }
+        self.onSceneChange = { 'operator': None, 'method': None }
         self.nodes = []
         self.scenes = []
+        self.States = [ 'Starting', 'Started', 'Stopping', 'Stopped' ]
+        self.BlankScene = op('../blank')
         self.GetScenes()
         self.CurrentScene( op('../scene1') )
         self.PreviousScene = None
-        self.StartCurrentScene()
-        if self.Me.fetch( 'Nextsceneindex' ) == self.CurrentScene().Index:
-            self.Me.store( 'Nextsceneindex', self.CurrentScene().Index + 1 )
+        if root.var('Mode') == 'Perform' and self.State == 'Started':
+            self.StartCurrentScene()
+            if self.Me.fetch( 'Nextsceneindex' ) == self.CurrentScene().Index:
+                self.Me.store( 'Nextsceneindex', self.CurrentScene().Index + 1 )
+        elif root.var('Mode') == 'Perform':
+            self.Start()
+        else:
+            self.Stop()
         return
 
 
     def Test(self):
         self.print('test extension')
         return
-    def Start(self, operator=None, method=None):
-        self.onStart = { 'operator': operator, 'method': method }
-        self.callback( self.onStart )
+    def Start(self, operator=None, method=None, index=None, name=None):
+        if self.State() == 'Stopped':
+            self.State( 'Starting' )
+
+            self.print('starting')
+            self.onStarted = { 'operator': operator, 'method': method }
+
+            if index is None and name is None:
+                index = self.getNextIndex()
+                if self.PreviousScene:
+                    if self.PreviousScene.Index > -1:
+                        index = self.PreviousScene.Index
+            self.ChangeScene( index = index, operator = self, method = 'OnStart' )
+
         return
 
     def Stop(self, operator=None, method=None):
-        self.onStop = { 'operator': operator, 'method': method }
-        self.callback( self.onStop )
+        if self.State() == 'Started':
+            self.State( 'Stopping' )
+
+            self.print('stopping')
+            self.onStopped = { 'operator': operator, 'method': method }
+
+            self.ChangeScene( blank = True, operator = self, method = 'OnStop')
+        
         return
     def getNextIndex(self):
         return self.Me.fetch( 'Nextsceneindex' )
@@ -40,7 +65,14 @@ class PerformExtension():
     def Changetonextscene(self):
         return self.ChangeScene( self.getNextIndex() )
 
-    def ChangeScene(self, index = None, name = 'scene1'):
+    def ChangeScene(self, index=None, name='scene1', blank=False, operator=None, method=None):
+        self.onSceneChange = { 'operator': None, 'method': None }
+        self.onSceneChange = { 'operator': operator, 'method': method }
+        
+        if blank:
+            self.newScene = self.BlankScene
+            return self.startSceneChange()
+
         self.newScene = False
         if type(index) == int:
             # self.print( self.scenes[index].name )
@@ -107,8 +139,22 @@ class PerformExtension():
 
     def OnCurrentSceneStart(self):
         self.Me.store('SceneStart', True )
+        self.callback( self.onSceneChange )
         return
     
+    def OnStart(self):
+        self.print('OnStart')
+        # - update started state in storage
+        self.State('Started')
+        # - run a 'started' callback
+        self.callback( self.onStarted )
+        return
+
+    def OnStop(self):
+        self.State( 'Stopped' )
+        # - run stopped callback
+        self.callback( self.onStopped )
+        return
 
     def stopAllScenes(self):
         print('stop all except', self.CurrentScene().name )
@@ -157,6 +203,14 @@ class PerformExtension():
             self.Me.store( 'CurrentScene', value )
             self.Me.par.Currentsceneindex.val = value.Index
         return value
+    
+    def State(self, value = None):
+        if value is None:
+            return self.Me.fetch('State')
+        else:
+            self.Me.store( 'State', value )
+            self.Me.par.State.val = value
+        return
         
     def OnPulse(self, par):
         if hasattr( self.Me, par.name ):
