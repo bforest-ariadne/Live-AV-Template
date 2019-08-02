@@ -6,7 +6,7 @@ class PerformExtension():
         self.Me = my_op
         self.name = my_op.name
         print('name: ', self.name )
-        #test3
+        #test4
         self.input = op('../input')
         self.Me.store( 'Input', op('../input') )
         self.onStop = { 'operator': None, 'method': None }
@@ -17,14 +17,17 @@ class PerformExtension():
         self.States = [ 'Starting', 'Started', 'Stopping', 'Stopped' ]
         self.BlankScene = op('../blank')
         self.GetScenes()
-        self.CurrentScene( op('../scene1') )
+        if self.CurrentScene() not in self.scenes:
+            self.CurrentScene( op('../scene1') )
+        self.print( 'current scene: ' + self.CurrentScene().name )
         self.PreviousScene = None
-        if root.var('Mode') == 'Perform' and self.State == 'Started':
-            self.StartCurrentScene()
-            if self.Me.fetch( 'Nextsceneindex' ) == self.CurrentScene().Index:
-                self.Me.store( 'Nextsceneindex', self.CurrentScene().Index + 1 )
-        elif root.var('Mode') == 'Perform':
-            self.Start()
+        if root.var('Mode') == 'Perform':
+            if self.State() == 'Started':
+                self.StartCurrentScene()
+                if self.Me.fetch( 'Nextsceneindex' ) == self.CurrentScene().Index:
+                    self.Me.store( 'Nextsceneindex', self.CurrentScene().Index + 1 )
+            else:
+                self.Start()
         else:
             self.Stop()
         return
@@ -65,9 +68,24 @@ class PerformExtension():
     def Changetonextscene(self):
         return self.ChangeScene( self.getNextIndex() )
 
-    def ChangeScene(self, index=None, name='scene1', blank=False, operator=None, method=None):
+    def ChangeScene(self, index=None, name='scene1', blank=False, operator=None, method=None, fadein=None, fadeout=None):
         self.onSceneChange = { 'operator': None, 'method': None }
         self.onSceneChange = { 'operator': operator, 'method': method }
+
+        if fadein is not None:
+            if type(fadein) == int:
+                float(fadein)
+            if type(fadein) == float:
+                self.Fadein( fadein )
+            else:
+                self.print( 'wrong type for Fadein' )
+        if fadeout is not None:
+            if type(fadeout) == int:
+                float(fadeout)
+            if type(fadeout) == float:
+                self.Fadeout( fadeout )
+            else:
+                self.print( 'wrong type for Fadeout' )
         
         if blank:
             self.newScene = self.BlankScene
@@ -76,9 +94,13 @@ class PerformExtension():
         self.newScene = False
         if type(index) == int:
             # self.print( self.scenes[index].name )
+            if index >= len( self.scenes ):
+                return False
             self.newScene = self.scenes[index]
         elif type( index ) == str and index.isnumeric():
             # self.print( self.scenes[ int(index) ].name )
+            if int(index) >= len( self.scenes ):
+                return False
             self.newScene = self.scenes[ int(index) ]
         elif type(name) == str:
             for scene in self.scenes:
@@ -95,22 +117,28 @@ class PerformExtension():
     
     def startSceneChange(self):
         # stop current scene -
-        self.print( 'stopping current scene' + self.CurrentScene().name )
+        self.print( 'stopping current scene ' + self.CurrentScene().name )
         if self.CurrentScene().State() != 'Stopped':
             self.CurrentScene().Stop( self, 'ContinueSceneChange' )
         else:
+            self.print( self.CurrentScene().name + ' was not Stopped ')
             self.ContinueSceneChange()
-        return 
+        return True
 
     def StartCurrentScene(self):
         # self.GetScenes()
+        self.print( 'StartCurrentScene init' )
+
         startedCount = 0
+        startedScenes = []
         for scene in self.scenes:
-            if scene != self.CurrentScene() and scene.State() == 'Started':
-                startedCount += 1
+            if scene.State() == 'Started':
+                startedScenes.append( scene )
+        startedCount = len( startedScenes )
         self.print('startedCount: ' + str(startedCount) )
-        if startedCount == 1 and self.CurrentScene().Start() == "Started":
-            return True
+        if startedCount == 1 and startedScenes[0] == self.CurrentScene():
+            if self.CurrentScene().Start() == "Started":
+                return True
         else:
             self.stopAllScenes()
             self.disconnectAllScenes()
@@ -218,7 +246,23 @@ class PerformExtension():
             self.Me.store( 'State', value )
             self.Me.par.State.val = value
         return
-        
+    
+    def Fadein(self, value = None):
+        if value is None:
+            return self.Me.fetch('Fadein')
+        else:
+            self.Me.store( 'Fadein', value )
+            self.Me.par.Fadein.val = value
+        return
+
+    def Fadeout(self, value = None):
+        if value is None:
+            return self.Me.fetch('Fadeout')
+        else:
+            self.Me.store( 'Fadeout', value )
+            self.Me.par.Fadeout.val = value
+        return
+
     def OnPulse(self, par):
         if hasattr( self.Me, par.name ):
             function = getattr( self.Me, par.name )

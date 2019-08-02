@@ -29,9 +29,8 @@ class OutputExtension():
         # change Modegoal var
         if Modegoal is not None and Modegoal in self.ModeNames:
             self.Me.store( 'Setmodegoal', Modegoal )
-        else:
-            return False
-        root.setVar( 'Modegoal', self.Me.fetch('Setmodegoal') )
+        elif Modegoal is None:
+            root.setVar( 'Modegoal', self.Me.fetch('Setmodegoal') )
         
         if root.var( 'Mode' ) != root.var( 'Modegoal' ):
 
