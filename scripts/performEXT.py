@@ -29,6 +29,7 @@ class PerformExtension():
             else:
                 self.Start()
         else:
+            self.print('not perform mode')
             self.Stop()
         return
 
@@ -64,6 +65,12 @@ class PerformExtension():
         return
     def getNextIndex(self):
         return self.Me.fetch( 'Nextsceneindex' )
+
+    def Nextsceneindex(self):
+        index = self.Me.fetch( 'Nextsceneindex' )
+        nextScene = self.scenes[index]
+        self.Me.par.Fadein.val = nextScene.par.Fadein.val
+        self.Me.par.Fadeout.val = self.CurrentScene().par.Fadeout.val
     
     def Changetonextscene(self):
         return self.ChangeScene( self.getNextIndex() )
@@ -71,12 +78,15 @@ class PerformExtension():
     def ChangeScene(self, index=None, name='scene1', blank=False, operator=None, method=None, fadein=None, fadeout=None):
         self.onSceneChange = { 'operator': None, 'method': None }
         self.onSceneChange = { 'operator': operator, 'method': method }
+        fadeinArg = False
+        fadeoutArg = False
 
         if fadein is not None:
             if type(fadein) == int:
                 float(fadein)
             if type(fadein) == float:
                 self.Fadein( fadein )
+                fadeinArg = True
             else:
                 self.print( 'wrong type for Fadein' )
         if fadeout is not None:
@@ -84,6 +94,7 @@ class PerformExtension():
                 float(fadeout)
             if type(fadeout) == float:
                 self.Fadeout( fadeout )
+                fadeoutArg = True
             else:
                 self.print( 'wrong type for Fadeout' )
         
@@ -108,10 +119,13 @@ class PerformExtension():
                     # self.print( scene.name )
                     self.newScene = scene
         if self.newScene:
-            if not self.newScene.par.Lockfades.eval():
-                self.newScene.par.Fadein = self.Me.fetch('Fadein')
-            if not self.CurrentScene().par.Lockfades.eval():
-                self.CurrentScene().par.Fadeout = self.Me.fetch('Fadeout')
+            if self.Fades() or fadeinArg:
+                if not self.newScene.par.Lockfades.eval():
+                    self.newScene.par.Fadein = self.Me.fetch('Fadein')
+            if self.Fades() or fadeoutArg:
+                if not self.CurrentScene().par.Lockfades.eval():
+                    self.CurrentScene().par.Fadeout = self.Me.fetch('Fadeout')
+
             return self.startSceneChange()
         return False
     
@@ -246,6 +260,17 @@ class PerformExtension():
             self.Me.store( 'State', value )
             self.Me.par.State.val = value
         return
+
+    def Fades(self, value = None):
+        
+        if value is None:
+            value = self.Me.fetch('Fades')
+        else:
+            self.Me.store( 'Fades', value )
+        self.print('fades: ' + str(value) )
+        self.Me.par.Fadein.readOnly = not value
+        self.Me.par.Fadeout.readOnly = not value
+        return value
     
     def Fadein(self, value = None):
         if value is None:

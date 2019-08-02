@@ -95,15 +95,14 @@ class OutputExtension():
     
     def State(self, value = None):
         if value is None:
-            value = self.Me.fetch('State')
-            return value
+            return self.Me.fetch('State')
         else:
             self.Me.store( 'State', value )
             self.Me.par.State.val = value
-        if value == 'Setting':
-            self.Me.par.Setmodegoal.readOnly = True
-        else:
-            self.Me.par.Setmodegoal.readOnly = False
+            if value == 'Setting':
+                self.Me.par.Setmodegoal.readOnly = True
+            else:
+                self.Me.par.Setmodegoal.readOnly = False
         return
         
     def OnPulse(self, par):
