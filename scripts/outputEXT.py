@@ -14,6 +14,7 @@ class OutputExtension():
         self.onStop = { 'operator': None, 'method': None }
         self.onStart = { 'operator': None, 'method': None }
         self.onModeSet = { 'operator': None, 'method': None }
+        self.States = [ 'Set', 'Setting' ]
         self.createParameters()
         self.Modes = root.findChildren(depth=1, tags=['Mode'])
         self.ModeNames = []
@@ -26,25 +27,32 @@ class OutputExtension():
         return
 
     def Setmodegoal(self, Modegoal=None, operator=None, method=None):
-        # change Modegoal var
-        if Modegoal is not None and Modegoal in self.ModeNames:
-            self.Me.store( 'Setmodegoal', Modegoal )
-        elif Modegoal is None:
-            root.setVar( 'Modegoal', self.Me.fetch('Setmodegoal') )
-        
-        if root.var( 'Mode' ) != root.var( 'Modegoal' ):
+        if self.State() == 'Set':
+            self.State( 'Setting' )
 
-            self.onModeSet = { 'operator': operator, 'method': method }
+            # change Modegoal var
+            if Modegoal is not None and Modegoal in self.ModeNames:
+                self.Me.store( 'Setmodegoal', Modegoal )
+            elif Modegoal is None:
+                root.setVar( 'Modegoal', self.Me.fetch('Setmodegoal') )
+            
+            if root.var( 'Mode' ) != root.var( 'Modegoal' ):
 
-            # send stop to current mode with stop callback
-            # self.OnModeStop()
-            modeOp = op( '/' + root.var('Mode') )
-            if modeOp.State() == 'Started':
-                modeOp.Stop( self, 'OnModeStop')
-            else:
-                self.OnModeStop()
-            return True
+                self.onModeSet = { 'operator': operator, 'method': method }
+
+                # send stop to current mode with stop callback
+                # self.OnModeStop()
+                modeOp = op( '/' + root.var('Mode') )
+                if modeOp.State() == 'Started':
+                    modeOp.Stop( self, 'OnModeStop')
+                else:
+                    self.OnModeStop()
+                return True
+            self.State('Set')
+            return False
+        self.State('Set')
         return False
+
 
     def OnModeStop(self):
         self.print('OnModeStop')
@@ -66,6 +74,8 @@ class OutputExtension():
         root.setVar( 'Mode', root.var( 'Modegoal' ) )
         # change modegoal to None
         root.setVar( 'Modegoal', 'None' )
+        self.State( 'Set' )
+        self.callback( self.onModeSet )
         return
 
     def createParameters(self):
@@ -81,6 +91,19 @@ class OutputExtension():
     def GetModeNames(self):
         for mode in self.Modes:
             self.ModeNames.append( mode.name )
+        return
+    
+    def State(self, value = None):
+        if value is None:
+            value = self.Me.fetch('State')
+            return value
+        else:
+            self.Me.store( 'State', value )
+            self.Me.par.State.val = value
+        if value == 'Setting':
+            self.Me.par.Setmodegoal.readOnly = True
+        else:
+            self.Me.par.Setmodegoal.readOnly = False
         return
         
     def OnPulse(self, par):
