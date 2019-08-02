@@ -15,14 +15,22 @@ class OutputExtension():
         self.onStart = { 'operator': None, 'method': None }
         self.onModeSet = { 'operator': None, 'method': None }
         self.createParameters()
+        self.Modes = root.findChildren(depth=1, tags=['Mode'])
+        self.ModeNames = []
+        self.GetModeNames()
+
         return
 
     def Test(self):
         self.print('test extension')
         return
 
-    def Setmodegoal(self, operator=None, method=None):
+    def Setmodegoal(self, Modegoal=None, operator=None, method=None):
         # change Modegoal var
+        if Modegoal is not None and Modegoal in self.ModeNames:
+            self.Me.store( 'Setmodegoal', Modegoal )
+        else:
+            return False
         root.setVar( 'Modegoal', self.Me.fetch('Setmodegoal') )
         
         if root.var( 'Mode' ) != root.var( 'Modegoal' ):
@@ -70,6 +78,10 @@ class OutputExtension():
         # stop = self.page.appendPulse( 'Stop', label = 'Stop')
         # Fadein = self.page.appendFloat( 'Fadein', label = 'Fadein')
         # Fadeout = self.page.appendFloat( 'Fadeout', label = 'Fadeout')
+        return
+    def GetModeNames(self):
+        for mode in self.Modes:
+            self.ModeNames.append( mode.name )
         return
         
     def OnPulse(self, par):
