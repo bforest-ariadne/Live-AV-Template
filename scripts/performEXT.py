@@ -96,7 +96,11 @@ class PerformExtension():
     def startSceneChange(self):
         # stop current scene -
         self.print( 'stopping current scene' + self.CurrentScene().name )
-        return self.CurrentScene().Stop( self, 'ContinueSceneChange' )
+        if self.CurrentScene().State() != 'Stopped':
+            self.CurrentScene().Stop( self, 'ContinueSceneChange' )
+        else:
+            self.ContinueSceneChange()
+        return 
 
     def StartCurrentScene(self):
         # self.GetScenes()
@@ -134,7 +138,10 @@ class PerformExtension():
         self.CurrentScene().outputConnectors[0].connect( self.input )
         # start current scene
         # update current scene started on start
-        self.CurrentScene().Start( self, 'OnCurrentSceneStart' )
+        if self.CurrentScene().State() != 'Started':
+            self.CurrentScene().Start( self, 'OnCurrentSceneStart' )
+        else:
+            self.OnCurrentSceneStart()
         return
 
     def OnCurrentSceneStart(self):

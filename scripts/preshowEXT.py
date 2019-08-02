@@ -11,6 +11,10 @@ class PreShowExtension():
         self.onStart = { 'operator': None, 'method': None }
         self.States = [ 'Starting', 'Started', 'Stopping', 'Stopped' ]
         self.fadeIO = op('../fadeIO')
+        if self.State() == 'Started':
+            self.fadeIO.ImmediateIn()
+        elif self.State() == 'Stopped':
+            self.fadeIO.ImmediateOut()
         # self.createParameters()
         return
 

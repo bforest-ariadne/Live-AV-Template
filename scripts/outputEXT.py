@@ -31,7 +31,11 @@ class OutputExtension():
 
             # send stop to current mode with stop callback
             # self.OnModeStop()
-            op( '/' + root.var('Mode') ).Stop( self, 'OnModeStop')
+            modeOp = op( '/' + root.var('Mode') )
+            if modeOp.State() == 'Started':
+                modeOp.Stop( self, 'OnModeStop')
+            else:
+                self.OnModeStop()
             return True
         return False
 
@@ -42,7 +46,11 @@ class OutputExtension():
         self.Me.par.selectpanel = root.var( 'Modegoal' )
         # send start to modegoal with start callback
         # self.OnModeStart()
-        op( '/' + root.var('Modegoal') ).Start( self, 'OnModeStart')
+        modeGoalOp =  op( '/' + root.var('Modegoal') )
+        if modeGoalOp.State() == 'Stopped':
+            modeGoalOp.Start( self, 'OnModeStart')
+        else:
+            self.OnModeStart()
         return
     
     def OnModeStart(self):

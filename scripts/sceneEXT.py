@@ -22,8 +22,13 @@ class SceneExtension():
         self.selInputs = []
         self.GetSelInputs()
         self.print('init')
-        self.fadeIO.ImmediateOut()
-        self.finishStopping()
+
+        if self.name != 'blank' and root.var('Mode') != 'Perform':
+            self.fadeIO.ImmediateOut()
+            self.finishStopping()
+        else:
+            self.fadeIO.ImmediateIn()
+            self.OnFadeIn()
         return
 
     def Test(self):
