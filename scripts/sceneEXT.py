@@ -55,9 +55,6 @@ class SceneExtension():
     def Stop(self, operator=None, method=None):
         if self.State() == 'Started':
             self.State( 'Stopping' )
-        # if not self.Me.fetch( 'Stopping' ) and not self.Me.fetch( 'Stopped' ):
-        #     self.Me.store( 'Stopping', True )
-        #     self.Me.store( 'Started', False )
 
             self.print('stopping')
             self.onStopped = { 'operator': operator, 'method': method }

@@ -26,9 +26,13 @@ class PerformExtension():
         self.print('test extension')
         return
     def Start(self, operator=None, method=None):
+        self.onStart = { 'operator': operator, 'method': method }
+        self.callback( self.onStart )
         return
 
     def Stop(self, operator=None, method=None):
+        self.onStop = { 'operator': operator, 'method': method }
+        self.callback( self.onStop )
         return
     def getNextIndex(self):
         return self.Me.fetch( 'Nextsceneindex' )

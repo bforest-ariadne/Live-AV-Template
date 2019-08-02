@@ -13,6 +13,7 @@ class OutputExtension():
         self.print('init')
         self.onStop = { 'operator': None, 'method': None }
         self.onStart = { 'operator': None, 'method': None }
+        self.onModeSet = { 'operator': None, 'method': None }
         self.createParameters()
         return
 
@@ -20,23 +21,31 @@ class OutputExtension():
         self.print('test extension')
         return
 
-    def Setmodegoal(self):
+    def Setmodegoal(self, operator=None, method=None):
         # change Modegoal var
         root.setVar( 'Modegoal', self.Me.fetch('Setmodegoal') )
         
         if root.var( 'Mode' ) != root.var( 'Modegoal' ):
-            # send stop to current mode with stop callback
-            self.OnModeStop()
 
-        return
+            self.onModeSet = { 'operator': operator, 'method': method }
+
+            # send stop to current mode with stop callback
+            # self.OnModeStop()
+            op( '/' + root.var('Mode') ).Stop( self, 'OnModeStop')
+            return True
+        return False
+
     def OnModeStop(self):
+        self.print('OnModeStop')
         # in stop callback switch output display to modegoal
         self.Me.par.opviewer = root.var( 'Modegoal' )
         # send start to modegoal with start callback
-        self.OnModeStart()
+        # self.OnModeStart()
+        op( '/' + root.var('Modegoal') ).Start( self, 'OnModeStart')
         return
     
     def OnModeStart(self):
+        self.print('OnModeStart')
         # change mode to modegoal
         root.setVar( 'Mode', root.var( 'Modegoal' ) )
         # change modegoal to None

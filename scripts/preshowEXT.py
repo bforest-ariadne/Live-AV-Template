@@ -9,30 +9,87 @@ class PreShowExtension():
         print('name: ', self.name )
         self.onStop = { 'operator': None, 'method': None }
         self.onStart = { 'operator': None, 'method': None }
-        self.createParameters()
+        self.States = [ 'Starting', 'Started', 'Stopping', 'Stopped' ]
+        self.fadeIO = op('../fadeIO')
+        # self.createParameters()
         return
 
     def Test(self):
         self.print('test extension')
         return
+
     def Start(self, operator=None, method=None):
-        fadeIO = op('../fadeIO')
-        fadeInSuccess = fadeIO.Fadein()
+        if self.State() == 'Stopped':
+            self.State( 'Starting' )
+
+            self.print('starting')
+            self.onStarted = { 'operator': operator, 'method': method }
+
+            fadeIO = self.fadeIO
+            fadeInSuccess = fadeIO.Fadein(self, 'OnFadeIn')
+            if fadeInSuccess == False:
+                self.OnFadeIn()
+            return True
+        else:
+            return False
         return
 
 
     def Stop(self, operator=None, method=None):
-        fadeIO = op('../fadeIO')
-        fadeOutSuccess = fadeIO.Fadeout()
+        if self.State() == 'Started':
+            self.State( 'Stopping' )
+
+            self.print('stopping')
+            self.onStopped = { 'operator': operator, 'method': method }
+            # - fade out scene from black
+            fadeIO = self.fadeIO
+            fadeOutSuccess = fadeIO.Fadeout(self, 'OnFadeOut')
+            if fadeOutSuccess == False:
+                self.OnFadeOut()
+
+            return True
+        else:
+            return False
+
+        return
+
+    def OnFadeIn(self):
+        self.print('onfadein')
+        # - update started state in storage
+        # self.Me.store( 'Started', True )
+        # self.Me.store( 'Starting', False )
+        # self.Me.store( 'Stopped', False )
+        self.State('Started')
+        # - run a 'started' callback
+        self.callback( self.onStarted )
+        return
+
+    def OnFadeOut(self):
+        self.print('onfadeout')
+        self.finishStopping()
+        return
+
+    def finishStopping(self):
+        self.State( 'Stopped' )
+        # - run stopped callback
+        self.callback( self.onStopped )
         return
 
     def createParameters(self):
-        self.Me.destroyCustomPars()
-        self.page = self.Me.appendCustomPage('Settings')
-        start = self.page.appendPulse( 'Start', label = 'Start')
-        stop = self.page.appendPulse( 'Stop', label = 'Stop')
+        # self.Me.destroyCustomPars()
+        # self.page = self.Me.appendCustomPage('Settings')
+        # start = self.page.appendPulse( 'Start', label = 'Start')
+        # stop = self.page.appendPulse( 'Stop', label = 'Stop')
         # Fadein = self.page.appendFloat( 'Fadein', label = 'Fadein')
         # Fadeout = self.page.appendFloat( 'Fadeout', label = 'Fadeout')
+        return
+
+    def State(self, value = None):
+        if value is None:
+            return self.Me.fetch('State')
+        else:
+            self.Me.store( 'State', value )
+            self.Me.par.State.val = value
         return
         
     def OnPulse(self, par):
