@@ -39,6 +39,7 @@ class OutputExtension():
         self.print('OnModeStop')
         # in stop callback switch output display to modegoal
         self.Me.par.opviewer = root.var( 'Modegoal' )
+        self.Me.par.selectpanel = root.var( 'Modegoal' )
         # send start to modegoal with start callback
         # self.OnModeStart()
         op( '/' + root.var('Modegoal') ).Start( self, 'OnModeStart')
