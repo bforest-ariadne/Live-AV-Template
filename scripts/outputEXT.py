@@ -8,7 +8,7 @@ class OutputExtension():
 
     def __init__(self, my_op):
         self.Me = my_op
-        #test5
+        #test6
         self.name = my_op.name
         self.print('init')
         self.onStop = { 'operator': None, 'method': None }
