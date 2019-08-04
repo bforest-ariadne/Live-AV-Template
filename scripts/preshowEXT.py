@@ -1,10 +1,11 @@
 op = op  # pylint:disable=invalid-name,used-before-assignment
+root = root  # pylint:disable=invalid-name,used-before-assignment
 
 class PreShowExtension():
 
     def __init__(self, my_op):
         self.Me = my_op
-        # test6 
+        # test
         self.name = my_op.name
         print('name: ', self.name )
         self.onStop = { 'operator': None, 'method': None }

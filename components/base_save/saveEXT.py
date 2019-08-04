@@ -226,6 +226,7 @@ class ExternalFiles:
 			
 			# if there's a match reload the DAT
 			if file_path == each_op_path:
+				print('refresh')
 				op(each_op.val).par.loadonstartpulse.pulse()
 				
 				# flash the background so we know a file has been loaded
@@ -261,7 +262,7 @@ class ExternalFiles:
 					pass
 
 				# stop once we have a hit
-				break
+				# break
 
 			else:
 				pass
