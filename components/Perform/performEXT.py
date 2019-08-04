@@ -1,4 +1,8 @@
 op = op  # pylint:disable=invalid-name,used-before-assignment
+root = root  # pylint:disable=invalid-name,used-before-assignment
+
+from TDStoreTools import StorageManager # deeply dependable collections/storage
+TDF = op.TDModules.mod.TDFunctions # utility functions
 
 class PerformExtension():
 
@@ -22,7 +26,23 @@ class PerformExtension():
         if self.CurrentScene not in self.scenes:
             self.CurrentScene = op('../scene1') 
         self.print( 'current scene: ' + self.CurrentScene.name )
-        self.PreviousScene = None
+        # self.PreviousScene = None
+        TDF.createProperty( self, 
+            'PreviousScene', 
+            value=self.BlankScene, 
+            dependable=True)
+        TDF.createProperty( self, 
+            'NewScene', 
+            value=self.Me.fetch('Scenes')[ self.Me.fetch('Nextsceneindex') ], 
+            dependable=True)
+        TDF.createProperty( self, 
+            'Changing', 
+            value=False, 
+            dependable=True)
+
+        self.FadeInProg = op('../fadeInProg')
+        self.FadeOutProg = op('../fadeOutProg')
+
         if root.var('Mode') == 'Perform':
             if self.State == 'Started':
                 self.StartCurrentScene()
@@ -101,29 +121,29 @@ class PerformExtension():
                 self.print( 'wrong type for Fadeout' )
         
         if blank:
-            self.newScene = self.BlankScene
+            self.NewScene = self.BlankScene
             return self.startSceneChange()
 
-        self.newScene = False
+        self.NewScene = False
         if type(index) == int:
             # self.print( self.scenes[index].name )
             if index >= len( self.scenes ):
                 return False
-            self.newScene = self.scenes[index]
+            self.NewScene = self.scenes[index]
         elif type( index ) == str and index.isnumeric():
             # self.print( self.scenes[ int(index) ].name )
             if int(index) >= len( self.scenes ):
                 return False
-            self.newScene = self.scenes[ int(index) ]
+            self.NewScene = self.scenes[ int(index) ]
         elif type(name) == str:
             for scene in self.scenes:
                 if scene.name == name:
                     # self.print( scene.name )
-                    self.newScene = scene
-        if self.newScene:
+                    self.NewScene = scene
+        if self.NewScene:
             if self.Fades() or fadeinArg:
-                if not self.newScene.par.Lockfades.eval():
-                    self.newScene.par.Fadein = self.Me.fetch('Fadein')
+                if not self.NewScene.par.Lockfades.eval():
+                    self.NewScene.par.Fadein = self.Me.fetch('Fadein')
             if self.Fades() or fadeoutArg:
                 if not self.CurrentScene.par.Lockfades.eval():
                     self.CurrentScene.par.Fadeout = self.Me.fetch('Fadeout')
@@ -133,6 +153,7 @@ class PerformExtension():
     
     def startSceneChange(self):
         # stop current scene -
+        self.Changing = True
         self.print( 'stopping current scene ' + self.CurrentScene.name )
         if self.CurrentScene.State != 'Stopped':
             self.CurrentScene.Stop( self, 'ContinueSceneChange' )
@@ -176,8 +197,8 @@ class PerformExtension():
         # change current scene to previous scene
         self.PreviousScene = self.CurrentScene
         # set new scene to current scene
-        self.CurrentScene = self.newScene 
-        self.Me.par.Currentsceneindex = self.newScene.Index
+        self.CurrentScene = self.NewScene 
+        self.Me.par.Currentsceneindex = self.NewScene.Index
         # connect current scene to input
         self.CurrentScene.outputConnectors[0].connect( self.input )
         # start current scene
@@ -190,6 +211,7 @@ class PerformExtension():
 
     def OnCurrentSceneStart(self):
         self.Me.store('SceneStart', True )
+        self.Changing = False
         self.callback( self.onSceneChange )
         return
     

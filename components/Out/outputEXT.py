@@ -16,8 +16,17 @@ class OutputExtension():
         self.onModeSet = { 'operator': None, 'method': None }
         self.States = [ 'Set', 'Setting' ]
         self.State = self.Me.fetch( 'State' )
-        self.createParameters()
         self.Modes = root.findChildren(depth=1, tags=['Mode'])
+        self.fadeInProg = op('./fadeInProg')
+        self.fadeOutProg = op('./fadeOutProg')
+        TDF.createProperty( self, 
+            'FadeInProgSel', 
+            value=op('/' + root.var('Modegoal') ).FadeInProg if root.var('Modegoal') != 'None' else op('constant1'), 
+            dependable=True)
+        TDF.createProperty( self, 
+            'FadeOutProgSel', 
+            value=op('/' + root.var('Mode') ).FadeOutProg, 
+            dependable=True)
         self.ModeNames = []
         self.GetModeNames()
         self.Setmodegoal()
@@ -80,32 +89,31 @@ class OutputExtension():
         self.callback( self.onModeSet )
         return
 
-    def createParameters(self):
-        # self.Me.destroyCustomPars()
-        # self.page = self.Me.appendCustomPage('Settings')
-        # self.page.appendPulse( 'Test', label='Test', replace=True )
-        # self.page.appendMenu( )
-        # start = self.page.appendPulse( 'Start', label = 'Start')
-        # stop = self.page.appendPulse( 'Stop', label = 'Stop')
-        # Fadein = self.page.appendFloat( 'Fadein', label = 'Fadein')
-        # Fadeout = self.page.appendFloat( 'Fadeout', label = 'Fadeout')
-        return
     def GetModeNames(self):
         for mode in self.Modes:
             self.ModeNames.append( mode.name )
         return
     
-    # def State(self, value = None):
-    #     if value is None:
-    #         return self.Me.fetch('State')
-    #     else:
-    #         self.Me.store( 'State', value )
-    #         self.Me.par.State.val = value
-    #         if value == 'Setting':
-    #             self.Me.par.Setmodegoal.readOnly = True
-    #         else:
-    #             self.Me.par.Setmodegoal.readOnly = False
-    #     return
+    def OnRowChange(self, dat, rows):
+        for row in rows:
+            cells = dat.row( row )
+            varName = cells[0]
+            varVal = cells[1]
+            # print( 'var: ', varName, ' val: ', varVal )
+            customPars = self.Me.customPars
+            for par in customPars:
+                if par.name == varName:
+                    par.val = varVal
+                    self.updateProgressSelect()
+                    
+    
+    def updateProgressSelect(self):
+        if root.var('Modegoal') != 'None':
+            self.FadeInProgSel = op('/' + root.var('Modegoal') ).FadeInProg
+        else:
+            self.FadeInProgSel = op('constant1')
+        self.FadeOutProgSel = op('/' + root.var('Mode') ).FadeOutProg
+        return
 
     @property
     def State(self):
