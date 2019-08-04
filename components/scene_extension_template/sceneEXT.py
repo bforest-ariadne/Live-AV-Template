@@ -13,6 +13,7 @@ class SceneExtension():
         self.name = my_op.name
         # self.Page = self.Me.customPages[0]
         self.States = [ 'Starting', 'Started', 'Stopping', 'Stopped' ]
+        self.State = self.Me.fetch( 'State' )
         self.Me.par.State.menuLabels = self.States
         self.Me.par.State.menuNames = self.States
         self.onStopped = { 'operator': None, 'method': None }
@@ -36,8 +37,8 @@ class SceneExtension():
         return
     def Start(self, operator=None, method=None, inTime=None, outTime=None):
         # method that starts the scene
-        if self.State() == 'Stopped':
-            self.State( 'Starting' )
+        if self.State == 'Stopped':
+            self.State = 'Starting' 
         # if not self.Me.fetch( 'Starting' ) and not self.Me.fetch( 'Started' ):
         #     self.Me.store( 'Stopped', False )
         #     self.Me.store( 'Starting', True )
@@ -58,8 +59,8 @@ class SceneExtension():
         return
 
     def Stop(self, operator=None, method=None):
-        if self.State() == 'Started':
-            self.State( 'Stopping' )
+        if self.State == 'Started':
+            self.State = 'Stopping' 
 
             self.print('stopping')
             self.onStopped = { 'operator': operator, 'method': method }
@@ -82,7 +83,7 @@ class SceneExtension():
         # self.Me.store( 'Started', True )
         # self.Me.store( 'Starting', False )
         # self.Me.store( 'Stopped', False )
-        self.State('Started')
+        self.State = 'Started'
         # - run a 'started' callback
         self.callback( self.onStarted )
         return
@@ -98,7 +99,7 @@ class SceneExtension():
         # - update states in storage
         # self.Me.store( 'Stopping', False )
         # self.Me.store( 'Stopped', True )
-        self.State( 'Stopped' )
+        self.State = 'Stopped' 
         # - run stopped callback
         self.callback( self.onStopped )
         return
@@ -141,13 +142,23 @@ class SceneExtension():
         self.Me.par.Fadeout.readOnly = self.Me.par.Lockfades.val
         return
 
-    def State(self, value = None):
-        if value is None:
-            return self.Me.fetch('State')
-        else:
-            self.Me.store( 'State', value )
-            self.Me.par.State.val = value
-        return
+    # def State(self, value = None):
+    #     if value is None:
+    #         return self.Me.fetch('State')
+    #     else:
+    #         self.Me.store( 'State', value )
+    #         self.Me.par.State.val = value
+    #     return
+
+    @property
+    def State(self):
+        return self.Me.fetch('State')
+    
+    @State.setter
+    def State(self, val):
+        if val in self.States:
+            self.Me.store( 'State', val )
+            self.Me.par.State.val = val
         
     def OnPulse(self, par):
         if hasattr( self.Me, par.name ):

@@ -12,16 +12,17 @@ class PreShowExtension():
         self.onStart = { 'operator': None, 'method': None }
         self.States = [ 'Starting', 'Started', 'Stopping', 'Stopped' ]
         self.fadeIO = op('../fadeIO')
+        self.State = self.Me.fetch( 'State' )
 
-        if self.State() == 'Started':
+        if self.State == 'Started':
             self.fadeIO.ImmediateIn()
-        elif self.State() == 'Stopped':
+        elif self.State == 'Stopped':
             self.fadeIO.ImmediateOut()
         
         if root.var('Mode') == self.name:
-            if self.State() != 'Started': self.Start()
+            if self.State != 'Started': self.Start()
         else:
-            if self.State() != 'Stopped': self.Stop()
+            if self.State != 'Stopped': self.Stop()
         # self.createParameters()
         return
 
@@ -30,8 +31,8 @@ class PreShowExtension():
         return
 
     def Start(self, operator=None, method=None):
-        if self.State() == 'Stopped':
-            self.State( 'Starting' )
+        if self.State == 'Stopped':
+            self.State =  'Starting' 
 
             self.print('starting')
             self.onStarted = { 'operator': operator, 'method': method }
@@ -47,8 +48,8 @@ class PreShowExtension():
 
 
     def Stop(self, operator=None, method=None):
-        if self.State() == 'Started':
-            self.State( 'Stopping' )
+        if self.State == 'Started':
+            self.State =  'Stopping' 
 
             self.print('stopping')
             self.onStopped = { 'operator': operator, 'method': method }
@@ -70,7 +71,7 @@ class PreShowExtension():
         # self.Me.store( 'Started', True )
         # self.Me.store( 'Starting', False )
         # self.Me.store( 'Stopped', False )
-        self.State('Started')
+        self.State = 'Started'
         # - run a 'started' callback
         self.callback( self.onStarted )
         return
@@ -81,7 +82,7 @@ class PreShowExtension():
         return
 
     def finishStopping(self):
-        self.State( 'Stopped' )
+        self.State =  'Stopped' 
         # - run stopped callback
         self.callback( self.onStopped )
         return
@@ -95,13 +96,29 @@ class PreShowExtension():
         # Fadeout = self.page.appendFloat( 'Fadeout', label = 'Fadeout')
         return
 
-    def State(self, value = None):
-        if value is None:
-            return self.Me.fetch('State')
-        else:
-            self.Me.store( 'State', value )
-            self.Me.par.State.val = value
-        return
+    # def State(self, value = None):
+    #     if value is None:
+    #         return self.Me.fetch('State')
+    #     else:
+    #         self.Me.store( 'State', value )
+    #         self.Me.par.State.val = value
+    #     return
+
+    """
+    to replace self.State('val') with self.State = val with find/replace:
+        input: self.State\((.*)(\))
+        output: self.State = $1
+    """
+
+    @property
+    def State(self):
+        return self.Me.fetch('State')
+    
+    @State.setter
+    def State(self, val):
+        if val in self.States:
+            self.Me.store( 'State', val )
+            self.Me.par.State.val = val
         
     def OnPulse(self, par):
         if hasattr( self.Me, par.name ):

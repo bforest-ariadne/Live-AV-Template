@@ -15,6 +15,7 @@ class OutputExtension():
         self.onStart = { 'operator': None, 'method': None }
         self.onModeSet = { 'operator': None, 'method': None }
         self.States = [ 'Set', 'Setting' ]
+        self.State = self.Me.fetch( 'State' )
         self.createParameters()
         self.Modes = root.findChildren(depth=1, tags=['Mode'])
         self.ModeNames = []
@@ -27,8 +28,8 @@ class OutputExtension():
         return
 
     def Setmodegoal(self, Modegoal=None, operator=None, method=None):
-        if self.State() == 'Set':
-            self.State( 'Setting' )
+        if self.State == 'Set':
+            self.State = 'Setting' 
 
             # change Modegoal var
             if Modegoal is not None and Modegoal in self.ModeNames:
@@ -48,9 +49,9 @@ class OutputExtension():
                 else:
                     self.OnModeStop()
                 return True
-            self.State('Set')
+            self.State = 'Set'
             return False
-        self.State('Set')
+        self.State = 'Set'
         return False
 
 
@@ -74,7 +75,7 @@ class OutputExtension():
         root.setVar( 'Mode', root.var( 'Modegoal' ) )
         # change modegoal to None
         root.setVar( 'Modegoal', 'None' )
-        self.State( 'Set' )
+        self.State = 'Set' 
         self.callback( self.onModeSet )
         return
 
@@ -93,17 +94,31 @@ class OutputExtension():
             self.ModeNames.append( mode.name )
         return
     
-    def State(self, value = None):
-        if value is None:
-            return self.Me.fetch('State')
-        else:
-            self.Me.store( 'State', value )
-            self.Me.par.State.val = value
-            if value == 'Setting':
+    # def State(self, value = None):
+    #     if value is None:
+    #         return self.Me.fetch('State')
+    #     else:
+    #         self.Me.store( 'State', value )
+    #         self.Me.par.State.val = value
+    #         if value == 'Setting':
+    #             self.Me.par.Setmodegoal.readOnly = True
+    #         else:
+    #             self.Me.par.Setmodegoal.readOnly = False
+    #     return
+
+    @property
+    def State(self):
+        return self.Me.fetch('State')
+    
+    @State.setter
+    def State(self, val):
+        if val in self.States:
+            self.Me.store( 'State', val )
+            self.Me.par.State.val = val
+            if val == 'Setting':
                 self.Me.par.Setmodegoal.readOnly = True
             else:
                 self.Me.par.Setmodegoal.readOnly = False
-        return
         
     def OnPulse(self, par):
         if hasattr( self.Me, par.name ):

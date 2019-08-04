@@ -15,6 +15,7 @@ class PerformExtension():
         self.nodes = []
         self.scenes = []
         self.States = [ 'Starting', 'Started', 'Stopping', 'Stopped' ]
+        self.State = self.Me.fetch( 'State' )
         self.BlankScene = op('../blank')
         self.GetScenes()
         if self.CurrentScene() not in self.scenes:
@@ -22,7 +23,7 @@ class PerformExtension():
         self.print( 'current scene: ' + self.CurrentScene().name )
         self.PreviousScene = None
         if root.var('Mode') == 'Perform':
-            if self.State() == 'Started':
+            if self.State == 'Started':
                 self.StartCurrentScene()
                 if self.Me.fetch( 'Nextsceneindex' ) == self.CurrentScene().Index:
                     self.Me.store( 'Nextsceneindex', self.CurrentScene().Index + 1 )
@@ -38,8 +39,8 @@ class PerformExtension():
         self.print('test extension')
         return
     def Start(self, operator=None, method=None, index=None, name=None):
-        if self.State() == 'Stopped':
-            self.State( 'Starting' )
+        if self.State == 'Stopped':
+            self.State = 'Starting' 
 
             self.print('starting')
             self.onStarted = { 'operator': operator, 'method': method }
@@ -54,8 +55,8 @@ class PerformExtension():
         return
 
     def Stop(self, operator=None, method=None):
-        if self.State() == 'Started':
-            self.State( 'Stopping' )
+        if self.State == 'Started':
+            self.State = 'Stopping' 
 
             self.print('stopping')
             self.onStopped = { 'operator': operator, 'method': method }
@@ -194,13 +195,13 @@ class PerformExtension():
     def OnStart(self):
         self.print('OnStart')
         # - update started state in storage
-        self.State('Started')
+        self.State = 'Started'
         # - run a 'started' callback
         self.callback( self.onStarted )
         return
 
     def OnStop(self):
-        self.State( 'Stopped' )
+        self.State = 'Stopped' 
         # - run stopped callback
         self.callback( self.onStopped )
         return
@@ -253,13 +254,15 @@ class PerformExtension():
             self.Me.par.Currentsceneindex.val = value.Index
         return value
     
-    def State(self, value = None):
-        if value is None:
-            return self.Me.fetch('State')
-        else:
-            self.Me.store( 'State', value )
-            self.Me.par.State.val = value
-        return
+    @property
+    def State(self):
+        return self.Me.fetch('State')
+    
+    @State.setter
+    def State(self, val):
+        if val in self.States:
+            self.Me.store( 'State', val )
+            self.Me.par.State.val = val
 
     def Fades(self, value = None):
         
