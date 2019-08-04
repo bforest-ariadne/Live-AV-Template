@@ -1,3 +1,13 @@
+    
+# vscode pieces
+.vscode/*
+ 
+# mac files
+*.DS_STORE
+
+# TD backups
+Backup/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
