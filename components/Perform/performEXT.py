@@ -16,17 +16,18 @@ class PerformExtension():
         self.scenes = []
         self.States = [ 'Starting', 'Started', 'Stopping', 'Stopped' ]
         self.State = self.Me.fetch( 'State' )
+        self.CurrentScene = self.Me.fetch('CurrentScene')
         self.BlankScene = op('../blank')
         self.GetScenes()
-        if self.CurrentScene() not in self.scenes:
-            self.CurrentScene( op('../scene1') )
-        self.print( 'current scene: ' + self.CurrentScene().name )
+        if self.CurrentScene not in self.scenes:
+            self.CurrentScene = op('../scene1') 
+        self.print( 'current scene: ' + self.CurrentScene.name )
         self.PreviousScene = None
         if root.var('Mode') == 'Perform':
             if self.State == 'Started':
                 self.StartCurrentScene()
-                if self.Me.fetch( 'Nextsceneindex' ) == self.CurrentScene().Index:
-                    self.Me.store( 'Nextsceneindex', self.CurrentScene().Index + 1 )
+                if self.Me.fetch( 'Nextsceneindex' ) == self.CurrentScene.Index:
+                    self.Me.store( 'Nextsceneindex', self.CurrentScene.Index + 1 )
             else:
                 self.Start()
         else:
@@ -71,7 +72,7 @@ class PerformExtension():
         index = self.Me.fetch( 'Nextsceneindex' )
         nextScene = self.scenes[index]
         self.Me.par.Fadein.val = nextScene.par.Fadein.val
-        self.Me.par.Fadeout.val = self.CurrentScene().par.Fadeout.val
+        self.Me.par.Fadeout.val = self.CurrentScene.par.Fadeout.val
     
     def Changetonextscene(self):
         return self.ChangeScene( self.getNextIndex() )
@@ -124,19 +125,19 @@ class PerformExtension():
                 if not self.newScene.par.Lockfades.eval():
                     self.newScene.par.Fadein = self.Me.fetch('Fadein')
             if self.Fades() or fadeoutArg:
-                if not self.CurrentScene().par.Lockfades.eval():
-                    self.CurrentScene().par.Fadeout = self.Me.fetch('Fadeout')
+                if not self.CurrentScene.par.Lockfades.eval():
+                    self.CurrentScene.par.Fadeout = self.Me.fetch('Fadeout')
 
             return self.startSceneChange()
         return False
     
     def startSceneChange(self):
         # stop current scene -
-        self.print( 'stopping current scene ' + self.CurrentScene().name )
-        if self.CurrentScene().State != 'Stopped':
-            self.CurrentScene().Stop( self, 'ContinueSceneChange' )
+        self.print( 'stopping current scene ' + self.CurrentScene.name )
+        if self.CurrentScene.State != 'Stopped':
+            self.CurrentScene.Stop( self, 'ContinueSceneChange' )
         else:
-            self.print( self.CurrentScene().name + ' was not Stopped ')
+            self.print( self.CurrentScene.name + ' was not Stopped ')
             self.ContinueSceneChange()
         return True
 
@@ -151,19 +152,19 @@ class PerformExtension():
                 startedScenes.append( scene )
         startedCount = len( startedScenes )
         self.print('startedCount: ' + str(startedCount) )
-        if startedCount == 1 and startedScenes[0] == self.CurrentScene():
-            if self.CurrentScene().Start() == "Started":
+        if startedCount == 1 and startedScenes[0] == self.CurrentScene:
+            if self.CurrentScene.Start() == "Started":
                 return True
         else:
             self.stopAllScenes()
             self.disconnectAllScenes()
-            # self.CurrentScene( self.scenes[0] )
-            self.CurrentScene().outputConnectors[0].connect( self.input )
-            self.Me.par.Currentsceneindex = self.CurrentScene().Index
-            if self.CurrentScene().State == 'Stopped':
-                self.CurrentScene().Start( self, 'OnCurrentSceneStart' )
-            # elif self.CurrentScene().State == 'Stopping':
-            #     self.CurrentScene().onStopped = { 'operator': self.CurrentScene(), 'method': 'Start' }
+            # self.CurrentScene = self.scenes[0] 
+            self.CurrentScene.outputConnectors[0].connect( self.input )
+            self.Me.par.Currentsceneindex = self.CurrentScene.Index
+            if self.CurrentScene.State == 'Stopped':
+                self.CurrentScene.Start( self, 'OnCurrentSceneStart' )
+            # elif self.CurrentScene.State == 'Stopping':
+            #     self.CurrentScene.onStopped = { 'operator': self.CurrentScene, 'method': 'Start' }
             return 
         return
 
@@ -171,18 +172,18 @@ class PerformExtension():
         self.print( 'continueSceneChange' )
         self.Me.store('SceneStart', False )
         # disconnect on stop
-        self.CurrentScene().outputConnectors[0].disconnect()
+        self.CurrentScene.outputConnectors[0].disconnect()
         # change current scene to previous scene
-        self.PreviousScene = self.CurrentScene()
+        self.PreviousScene = self.CurrentScene
         # set new scene to current scene
-        self.CurrentScene( self.newScene )
+        self.CurrentScene = self.newScene 
         self.Me.par.Currentsceneindex = self.newScene.Index
         # connect current scene to input
-        self.CurrentScene().outputConnectors[0].connect( self.input )
+        self.CurrentScene.outputConnectors[0].connect( self.input )
         # start current scene
         # update current scene started on start
-        if self.CurrentScene().State != 'Started':
-            self.CurrentScene().Start( self, 'OnCurrentSceneStart' )
+        if self.CurrentScene.State != 'Started':
+            self.CurrentScene.Start( self, 'OnCurrentSceneStart' )
         else:
             self.OnCurrentSceneStart()
         return
@@ -207,17 +208,17 @@ class PerformExtension():
         return
 
     def stopAllScenes(self):
-        print('stop all except', self.CurrentScene().name )
+        print('stop all except', self.CurrentScene.name )
         for scene in self.scenes:
-            if scene != self.CurrentScene():
+            if scene != self.CurrentScene:
                 if scene.State == 'Started':
                     print( scene.name, scene.State )
                     scene.Stop()
         return
     def disconnectAllScenes(self):
-        print('dissconnect all except', self.CurrentScene().name )
+        print('dissconnect all except', self.CurrentScene.name )
         for scene in self.scenes:
-            if scene != self.CurrentScene():
+            if scene != self.CurrentScene:
                 scene.outputConnectors[0].disconnect()
         return
 
@@ -246,13 +247,14 @@ class PerformExtension():
         self.Me.par.Currentsceneindex.normMax = len(self.scenes) -1
         return
 
-    def CurrentScene(self, value = None):
-        if value is None:
-            return self.Me.fetch('CurrentScene')
-        else:
-            self.Me.store( 'CurrentScene', value )
-            self.Me.par.Currentsceneindex.val = value.Index
-        return value
+    @property
+    def CurrentScene(self):
+        return self.Me.fetch('CurrentScene')
+    
+    @CurrentScene.setter
+    def CurrentScene(self, val):
+        self.Me.store( 'CurrentScene', val )
+        self.Me.par.Currentsceneindex.val = val.Index
     
     @property
     def State(self):
