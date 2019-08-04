@@ -133,7 +133,7 @@ class PerformExtension():
     def startSceneChange(self):
         # stop current scene -
         self.print( 'stopping current scene ' + self.CurrentScene().name )
-        if self.CurrentScene().State() != 'Stopped':
+        if self.CurrentScene().State != 'Stopped':
             self.CurrentScene().Stop( self, 'ContinueSceneChange' )
         else:
             self.print( self.CurrentScene().name + ' was not Stopped ')
@@ -147,7 +147,7 @@ class PerformExtension():
         startedCount = 0
         startedScenes = []
         for scene in self.scenes:
-            if scene.State() == 'Started':
+            if scene.State == 'Started':
                 startedScenes.append( scene )
         startedCount = len( startedScenes )
         self.print('startedCount: ' + str(startedCount) )
@@ -160,9 +160,9 @@ class PerformExtension():
             # self.CurrentScene( self.scenes[0] )
             self.CurrentScene().outputConnectors[0].connect( self.input )
             self.Me.par.Currentsceneindex = self.CurrentScene().Index
-            if self.CurrentScene().State() == 'Stopped':
+            if self.CurrentScene().State == 'Stopped':
                 self.CurrentScene().Start( self, 'OnCurrentSceneStart' )
-            # elif self.CurrentScene().State() == 'Stopping':
+            # elif self.CurrentScene().State == 'Stopping':
             #     self.CurrentScene().onStopped = { 'operator': self.CurrentScene(), 'method': 'Start' }
             return 
         return
@@ -181,7 +181,7 @@ class PerformExtension():
         self.CurrentScene().outputConnectors[0].connect( self.input )
         # start current scene
         # update current scene started on start
-        if self.CurrentScene().State() != 'Started':
+        if self.CurrentScene().State != 'Started':
             self.CurrentScene().Start( self, 'OnCurrentSceneStart' )
         else:
             self.OnCurrentSceneStart()
@@ -210,8 +210,8 @@ class PerformExtension():
         print('stop all except', self.CurrentScene().name )
         for scene in self.scenes:
             if scene != self.CurrentScene():
-                if scene.State() == 'Started':
-                    print( scene.name, scene.State() )
+                if scene.State == 'Started':
+                    print( scene.name, scene.State )
                     scene.Stop()
         return
     def disconnectAllScenes(self):

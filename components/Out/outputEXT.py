@@ -20,7 +20,7 @@ class OutputExtension():
         self.Modes = root.findChildren(depth=1, tags=['Mode'])
         self.ModeNames = []
         self.GetModeNames()
-
+        self.Setmodegoal()
         return
 
     def Test(self):
@@ -44,11 +44,12 @@ class OutputExtension():
                 # send stop to current mode with stop callback
                 # self.OnModeStop()
                 modeOp = op( '/' + root.var('Mode') )
-                if modeOp.State() == 'Started':
+                if modeOp.State == 'Started':
                     modeOp.Stop( self, 'OnModeStop')
                 else:
                     self.OnModeStop()
                 return True
+            root.setVar( 'Modegoal', 'None' )
             self.State = 'Set'
             return False
         self.State = 'Set'
@@ -63,7 +64,7 @@ class OutputExtension():
         # send start to modegoal with start callback
         # self.OnModeStart()
         modeGoalOp =  op( '/' + root.var('Modegoal') )
-        if modeGoalOp.State() == 'Stopped':
+        if modeGoalOp.State == 'Stopped':
             modeGoalOp.Start( self, 'OnModeStart')
         else:
             self.OnModeStart()
@@ -126,7 +127,7 @@ class OutputExtension():
             if callable( function ):
                 function()
             else:
-                self.print( 'attr is not callable' )
+                self.print( 'attr is not callable: ' + par.name  )
         return
 
     def OnValueChange(self, par):
@@ -136,7 +137,7 @@ class OutputExtension():
             if callable( function ):
                 function()
             else:
-                self.print( 'attr is not callable' )
+                self.print( 'attr is not callable: ' + par.name )
         return
 
     def print(self, message):
