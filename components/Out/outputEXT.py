@@ -126,8 +126,8 @@ class OutputExtension():
             function = getattr( self.Me, par.name )
             if callable( function ):
                 function()
-            else:
-                self.print( 'attr is not callable: ' + par.name  )
+            # else:
+                # self.print( 'attr is not callable: ' + par.name  )
         return
 
     def OnValueChange(self, par):
@@ -136,8 +136,8 @@ class OutputExtension():
             function = getattr( self.Me, par.name )
             if callable( function ):
                 function()
-            else:
-                self.print( 'attr is not callable: ' + par.name )
+            # else:
+                # self.print( 'attr is not callable: ' + par.name )
         return
 
     def print(self, message):

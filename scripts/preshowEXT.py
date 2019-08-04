@@ -12,6 +12,8 @@ class PreShowExtension():
         self.onStart = { 'operator': None, 'method': None }
         self.States = [ 'Starting', 'Started', 'Stopping', 'Stopped' ]
         self.fadeIO = op('../fadeIO')
+        self.FadeInProg = op('../fadeIO/fadeInProg')
+        self.FadeOutProg = op('../fadeIO/fadeOutProg')
         self.State = self.Me.fetch( 'State' )
 
         if self.State == 'Started':
@@ -125,8 +127,8 @@ class PreShowExtension():
             function = getattr( self.Me, par.name )
             if callable( function ):
                 function()
-            else:
-                self.print( 'attr is not callable' )
+            # else:
+            #     self.print( 'attr is not callable' )
         return
 
     def OnValueChange(self, par):
@@ -135,8 +137,8 @@ class PreShowExtension():
             function = getattr( self.Me, par.name )
             if callable( function ):
                 function()
-            else:
-                self.print( 'attr is not callable' )
+            # else:
+            #     self.print( 'attr is not callable' )
         return
 
     def print(self, message):

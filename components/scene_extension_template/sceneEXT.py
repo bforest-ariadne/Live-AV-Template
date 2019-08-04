@@ -1,16 +1,19 @@
 op = op  # pylint:disable=invalid-name,used-before-assignment
+root = root  # pylint:disable=invalid-name,used-before-assignment
+
 class SceneExtension():
 
     def __init__(self, my_op):
         self.Me = my_op
         # test
-        self.Index = -1
+        
         self.onStop = { 'operator': None, 'method': None }
         self.onStart = { 'operator': None, 'method': None }
         self.Me.store( 'Output', op('../out1') )
         self.springs = []
         self.GetSprings()
         self.name = my_op.name
+        self.print('init')
         # self.Page = self.Me.customPages[0]
         self.States = [ 'Starting', 'Started', 'Stopping', 'Stopped' ]
         self.State = self.Me.fetch( 'State' )
@@ -20,16 +23,28 @@ class SceneExtension():
         self.onStarted = { 'operator': None, 'method': None }
         self.fadeIO = op('../fadeIO')
 
+        self.Index = -1
+        self.perform = op('/Perform')
+        if len( self.perform.fetch('Scenes') ) > 0:
+            if self.name != 'blank':
+                self.Index = self.perform.fetch('Scenes').index(self.Me)
+            else:
+                self.Index = -1
+        self.Me.par.Index.readOnly = True
+
         self.selInputs = []
         self.GetSelInputs()
         self.print('init')
 
-        if self.name != 'blank' and root.var('Mode') != 'Perform':
-            self.fadeIO.ImmediateOut()
-            self.finishStopping()
-        else:
+        if self.name == 'blank' and root.var('Mode') != 'Perform':
             self.fadeIO.ImmediateIn()
             self.OnFadeIn()
+        elif root.var('Mode') == 'Perform' and self.perform.fetch('CurrentScene') == self.Me:
+            self.fadeIO.ImmediateIn()
+            self.OnFadeIn()
+        else:
+            self.fadeIO.ImmediateOut()
+            self.finishStopping()
         return
 
     def Test(self):
@@ -159,6 +174,15 @@ class SceneExtension():
         if val in self.States:
             self.Me.store( 'State', val )
             self.Me.par.State.val = val
+
+    @property
+    def Index(self):
+        return self.Me.fetch( 'Index' )
+    
+    @Index.setter
+    def Index(self, val):
+        self.Me.store( 'Index', val )
+        self.Me.par.Index.val = val
         
     def OnPulse(self, par):
         if hasattr( self.Me, par.name ):
@@ -170,7 +194,8 @@ class SceneExtension():
         self.Me.store( par.name, par.eval() )
         if hasattr( self.Me, par.name ):
             function = getattr( self.Me, par.name )
-            function()
+            if callable( function ):
+                function()
         return
 
     def print(self, message):
