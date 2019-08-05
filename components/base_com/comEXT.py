@@ -3,6 +3,8 @@ Matthew Ragan | matthewragan.com
 '''
 import socket
 import json
+parComMod = mod('/IO/base_com/parComMOD')
+
 
 class Com:
 	'''
@@ -86,6 +88,15 @@ class Com:
 		
 		if json_msg.get( 'messagekind', None ):
 			parent().Processmessage(json_msg)
+		if json_msg.get( 'op_name', None ):
+			# print('opname: ', json_msg.get( 'op_name', None )[:-1])
+			for mode in root.findChildren(maxDepth=1):
+				# print('opname: ', json_msg.get( 'op_name', None )[:-1], ' Modename: ', mode.name)
+				if json_msg.get( 'op_name', None )[:-1] == mode.name:
+					# print('mode message: ', mode.name)
+					json_msg[ 'op_name' ] = mode.name
+					parComMod.load_pars(json_msg, mode, readOnly=False)
+
 		pass
 
 	def Processmessage(self, message, debug=False):

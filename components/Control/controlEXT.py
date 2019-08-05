@@ -1,6 +1,6 @@
 op = op  # pylint:disable=invalid-name,used-before-assignment
 root = root  # pylint:disable=invalid-name,used-before-assignment
-parComMod = mod('/IO/base_com/parComMOD')
+parComMod = mod('/Control/base_com/parComMOD')
 import socket
 import json
 
@@ -16,13 +16,22 @@ class ControlExtension():
         self.Children = self.children
         self.widgets = self.Me.findChildren(type=widgetCOMP)
         self.Widgets = self.widgets
+        self.WriteableWidgets = []
         self.Msg = {}
         self.fontColor = [0.913725, 1, 0, 1]
+        self.com = op('/Control/base_com')
         self.adjustWidgets()
 
         return
 
+    def OnChildParChange(self, par):
+        # self.print('child par change')
+        parDict = parComMod.page_to_dict( par.owner, 'Settings', [] )
+        self.com.Send_msg( parDict )
+        return
+
     def adjustWidgets(self):
+        self.WriteableWidgets = []
         for widget in self.widgets:
             # self.print('widget: ' + widget.name )
             if widget.pars('Value0') != []:
@@ -31,13 +40,15 @@ class ControlExtension():
                     fontColorParNames = ['*fontcolor*', '*fontoffcolor*']
                     for fontColorParName in fontColorParNames:
                         fontColorPars = widget.pars(fontColorParName)
-                        self.print(fontColorPars)
+                        # self.print(fontColorPars)
                         if fontColorPars != []:
                             fontColors = ['*fontcolorr', '*fontcolorg', '*fontcolorb', '*fontcolora']
                             for i in range(len(fontColors)):
                                 fontColorSingle = widget.pars( fontColors[i] )
                                 for fontPar in fontColorSingle:
                                     fontPar.val = self.fontColor[i]
+                else:
+                    self.WriteableWidgets.append( widget )
         return    
 
     def OnReceive(self, dat, rowIndex, message, bytes, peer):
