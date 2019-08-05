@@ -176,3 +176,7 @@ def load_pars(par_dict, target_op, readOnly=False):
                         if targetPar[0].val != each_val:
                             # print('changed par: ', each_par, each_val, 'source:', par_dict[ 'op_name' ], 'target:', target_op.name, targetPar[0].val )
                             targetPar[0].val = each_val
+                            if targetPar[0].isPulse:
+                                targetPar[0].pulse()
+                                print('changed par: ', each_par, each_val, 'source:', par_dict[ 'op_name' ], 'target:', target_op.name, targetPar[0].val )
+                            # print('pulse par', targetPar[0].name, targetPar[0].eval())
