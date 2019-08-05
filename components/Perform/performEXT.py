@@ -52,7 +52,7 @@ class PerformExtension():
 
         if root.var('Mode') == 'Perform':
             if self.State == 'Started':
-                self.InitCurrentScene()
+                self.initCurrentScene()
                 if self.Me.fetch( 'Nextsceneindex' ) == self.CurrentScene.Index:
                     self.Me.store( 'Nextsceneindex', self.CurrentScene.Index + 1 )
             else:
@@ -195,7 +195,7 @@ class PerformExtension():
         else:
             self.print( 'scene is already changing' )
 
-    def InitCurrentScene(self):
+    def initCurrentScene(self):
         # self.GetScenes()
         self.print( 'StartCurrentScene init' )
 
