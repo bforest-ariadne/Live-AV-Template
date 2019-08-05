@@ -19,6 +19,10 @@ class PerformExtension():
         self.onSceneChange = { 'operator': None, 'method': None }
         self.nodes = []
         self.scenes = []
+        TDF.createProperty( self, 
+            'Debug', 
+            value=False, 
+            dependable=True)
         self.com = op('/IO/base_com')
         self.States = [ 'Starting', 'Started', 'Stopping', 'Stopped' ]
         self.State = self.Me.fetch( 'State' )
@@ -42,6 +46,8 @@ class PerformExtension():
             value=False, 
             dependable=True)
 
+
+        self.Debug = False
         self.FadeInProg = op('../fadeInProg')
         self.FadeOutProg = op('../fadeOutProg')
 
@@ -177,9 +183,11 @@ class PerformExtension():
         return False
     
     def startSceneChange(self):
-        # set changing state property
+        # check changing state - no change start if already changing
         if not self.Changing:
+            # set changing state property
             self.Changing = True
+
             self.print( 'stopping current scene ' + self.CurrentScene.name )
             if self.CurrentScene.State != 'Stopped':
                 self.CurrentScene.Stop( self, 'ContinueSceneChange' )
@@ -365,7 +373,8 @@ class PerformExtension():
         return
 
     def print(self, message):
-        print( self.name + ': ', message )
+        if self.Debug:
+            print( self.name + ': ', message )
         return
 
     # method to call callbacks
