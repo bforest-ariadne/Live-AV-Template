@@ -177,15 +177,18 @@ class PerformExtension():
         return False
     
     def startSceneChange(self):
-        # stop current scene -
-        self.Changing = True
-        self.print( 'stopping current scene ' + self.CurrentScene.name )
-        if self.CurrentScene.State != 'Stopped':
-            self.CurrentScene.Stop( self, 'ContinueSceneChange' )
+        # set changing state property
+        if not self.Changing:
+            self.Changing = True
+            self.print( 'stopping current scene ' + self.CurrentScene.name )
+            if self.CurrentScene.State != 'Stopped':
+                self.CurrentScene.Stop( self, 'ContinueSceneChange' )
+            else:
+                self.print( self.CurrentScene.name + ' was not Stopped ')
+                self.ContinueSceneChange()
+            return True
         else:
-            self.print( self.CurrentScene.name + ' was not Stopped ')
-            self.ContinueSceneChange()
-        return True
+            self.print( 'scene is already changing' )
 
     def StartCurrentScene(self):
         # self.GetScenes()
