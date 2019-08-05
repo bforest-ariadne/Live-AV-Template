@@ -19,10 +19,11 @@ class PerformExtension():
         self.onSceneChange = { 'operator': None, 'method': None }
         self.nodes = []
         self.scenes = []
-        TDF.createProperty( self, 
-            'Debug', 
-            value=False, 
-            dependable=True)
+        # TDF.createProperty( self, 
+        #     'Debug', 
+        #     value=False, 
+        #     dependable=True)
+        self.Debug = False
         self.com = op('/IO/base_com')
         self.States = [ 'Starting', 'Started', 'Stopping', 'Stopped' ]
         self.State = self.Me.fetch( 'State' )
@@ -46,14 +47,12 @@ class PerformExtension():
             value=False, 
             dependable=True)
 
-
-        self.Debug = False
         self.FadeInProg = op('../fadeInProg')
         self.FadeOutProg = op('../fadeOutProg')
 
         if root.var('Mode') == 'Perform':
             if self.State == 'Started':
-                self.StartCurrentScene()
+                self.InitCurrentScene()
                 if self.Me.fetch( 'Nextsceneindex' ) == self.CurrentScene.Index:
                     self.Me.store( 'Nextsceneindex', self.CurrentScene.Index + 1 )
             else:
@@ -63,10 +62,6 @@ class PerformExtension():
             self.Stop()
         return
 
-
-    def Test(self):
-        self.print('test extension')
-        return
     def Start(self, operator=None, method=None, index=None, name=None):
         if self.State == 'Stopped':
             self.State = 'Starting' 
@@ -187,18 +182,20 @@ class PerformExtension():
         if not self.Changing:
             # set changing state property
             self.Changing = True
-
             self.print( 'stopping current scene ' + self.CurrentScene.name )
+            # check if CurrentScene is playing
             if self.CurrentScene.State != 'Stopped':
+                # stop Current Scene
                 self.CurrentScene.Stop( self, 'ContinueSceneChange' )
             else:
+                # if stopped, continue scene change from scene.OnStopped callback
                 self.print( self.CurrentScene.name + ' was not Stopped ')
                 self.ContinueSceneChange()
             return True
         else:
             self.print( 'scene is already changing' )
 
-    def StartCurrentScene(self):
+    def InitCurrentScene(self):
         # self.GetScenes()
         self.print( 'StartCurrentScene init' )
 
@@ -324,6 +321,16 @@ class PerformExtension():
             self.Me.store( 'State', val )
             self.Me.par.State.val = val
 
+    @property
+    def Debug(self):
+        return self.Me.fetch('Debug')
+    
+    @Debug.setter
+    def Debug(self, val):
+        if type( val ) == bool:
+            self.Me.store( 'Debug', val )
+            self.Me.par.Debug.val = val
+
     def Fades(self, value = None):
         
         if value is None:
@@ -356,8 +363,8 @@ class PerformExtension():
             function = getattr( self.Me, par.name )
             if callable( function ):
                 function()
-            else:
-                self.print( 'attr is not callable' )
+            # else:
+            #     self.print( 'attr is not callable' )
         return
 
     def OnValueChange(self, par):
@@ -366,14 +373,14 @@ class PerformExtension():
             function = getattr( self.Me, par.name )
             if callable( function ):
                 function()
-            else:
-                self.print( 'attr is not callable' )
+            # else:
+            #     self.print( 'attr is not callable' )
         parDict = parComMod.page_to_dict( par.owner, 'Settings', [] )
         self.com.Send_msg( parDict )
         return
 
     def print(self, message):
-        if self.Debug:
+        if self.Debug == True:
             print( self.name + ': ', message )
         return
 
@@ -388,4 +395,8 @@ class PerformExtension():
                 self.print('FADEIO: callback no fire')
                 self.print('operator: ' + config['operator'])
                 self.print('method: ' + config['method'])
+        return
+
+    def Test(self):
+        self.print('test extension')
         return
