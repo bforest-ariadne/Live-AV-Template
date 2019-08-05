@@ -17,6 +17,8 @@ class OutputExtension():
         self.States = [ 'Set', 'Setting' ]
         self.State = self.Me.fetch( 'State' )
         self.Modes = root.findChildren(depth=1, tags=['Mode'])
+        self.Me.store( 'Modes', self.Modes )
+        self.Me.store( 'States', self.States )
         self.fadeInProg = op('./fadeInProg')
         self.fadeOutProg = op('./fadeOutProg')
         TDF.createProperty( self, 
