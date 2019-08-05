@@ -154,8 +154,14 @@ class PerformExtension():
                 if scene.name == name:
                     # set new scene from scene name
                     self.NewScene = scene
+                    
         # checks that NewScene has been set
         if self.NewScene:
+            # check that new scene is different than current scene
+            if self.NewScene == self.CurrentScene:
+                self.print( 'new scene is same as current scene' )
+                return False
+
             # check if we should set the new scene fade in time
             if self.Fades() or fadeinArg:
                 if not self.NewScene.par.Lockfades.eval():
