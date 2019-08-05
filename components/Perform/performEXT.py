@@ -100,11 +100,15 @@ class PerformExtension():
         return self.ChangeScene( self.getNextIndex() )
 
     def ChangeScene(self, index=None, name='scene1', blank=False, operator=None, method=None, fadein=None, fadeout=None):
+        # init and set onSceneChange callbacks
         self.onSceneChange = { 'operator': None, 'method': None }
         self.onSceneChange = { 'operator': operator, 'method': method }
+
+        # fadeinArg is a temporary solution to mode based fades which is not implemented yet
+        # TODO implement mode based fades
         fadeinArg = False
         fadeoutArg = False
-
+        # this logic is type checking the fadein and fadeout arguments
         if fadein is not None:
             if type(fadein) == int:
                 float(fadein)
@@ -122,32 +126,45 @@ class PerformExtension():
             else:
                 self.print( 'wrong type for Fadeout' )
         
+        # starts change to blank scene if blang arg
         if blank:
             self.NewScene = self.BlankScene
             return self.startSceneChange()
 
+        # initialize new scene
         self.NewScene = False
+        # type check new scene int arg
         if type(index) == int:
-            # self.print( self.scenes[index].name )
+            # make sure index is within range of available scenes
             if index >= len( self.scenes ):
                 return False
+            # set new scene from index
             self.NewScene = self.scenes[index]
+        # type check for index as string
         elif type( index ) == str and index.isnumeric():
-            # self.print( self.scenes[ int(index) ].name )
+            # make sure index is within range of available scenes
             if int(index) >= len( self.scenes ):
                 return False
+            # set new scene from index
             self.NewScene = self.scenes[ int(index) ]
+        # type check name arg
         elif type(name) == str:
+            # check if scene arg is in available scenes
             for scene in self.scenes:
                 if scene.name == name:
-                    # self.print( scene.name )
+                    # set new scene from scene name
                     self.NewScene = scene
+        # checks that NewScene has been set
         if self.NewScene:
+            # check if we should set the new scene fade in time
             if self.Fades() or fadeinArg:
                 if not self.NewScene.par.Lockfades.eval():
+                    # set the fadein time for our new scene
                     self.NewScene.par.Fadein = self.Me.fetch('Fadein')
+            # check if we should set the new scene fade out time
             if self.Fades() or fadeoutArg:
                 if not self.CurrentScene.par.Lockfades.eval():
+                    # set the fadeout time for our new scene
                     self.CurrentScene.par.Fadeout = self.Me.fetch('Fadeout')
 
             return self.startSceneChange()
