@@ -13,10 +13,33 @@ class ControlExtension():
         print('name: ', self.name )
         self.com = op('/IO/base_com')
         self.children = self.Me.findChildren(type=containerCOMP, maxDepth=2)
-        # self.print(self.children)
+        self.Children = self.children
+        self.widgets = self.Me.findChildren(type=widgetCOMP)
+        self.Widgets = self.widgets
         self.Msg = {}
+        self.fontColor = [0.913725, 1, 0, 1]
+        self.adjustWidgets()
+
         return
-    
+
+    def adjustWidgets(self):
+        for widget in self.widgets:
+            # self.print('widget: ' + widget.name )
+            if widget.pars('Value0') != []:
+                if widget.par.Value0.bindMaster.readOnly:
+                    # self.print('readOnly par: ' + widget.name)
+                    fontColorParNames = ['*fontcolor*', '*fontoffcolor*']
+                    for fontColorParName in fontColorParNames:
+                        fontColorPars = widget.pars(fontColorParName)
+                        self.print(fontColorPars)
+                        if fontColorPars != []:
+                            fontColors = ['*fontcolorr', '*fontcolorg', '*fontcolorb', '*fontcolora']
+                            for i in range(len(fontColors)):
+                                fontColorSingle = widget.pars( fontColors[i] )
+                                for fontPar in fontColorSingle:
+                                    fontPar.val = self.fontColor[i]
+        return    
+
     def OnReceive(self, dat, rowIndex, message, bytes, peer):
         json_msg = json.loads(message)
 		
@@ -28,6 +51,8 @@ class ControlExtension():
         for child in self.children:
             if child.name.find( msg.get( 'op_name', None ) ) != -1:
                 self.Msg = msg
+                readOnly = child.digits is not None
+                parComMod.load_pars( msg, child, readOnly=readOnly )
 
         return
 

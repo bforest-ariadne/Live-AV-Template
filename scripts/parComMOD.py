@@ -154,7 +154,7 @@ def load_preset(op_name, storage_op, target_op):
 
     target_op.par.Presetname = op_name
 
-def load_pars(par_dict, target_op):
+def load_pars(par_dict, target_op, readOnly=False):
 
     # safety to ensure we have a preset to use
     # try:
@@ -163,13 +163,14 @@ def load_pars(par_dict, target_op):
     #     print("This preset does not exist")
 
     # loop through all pars and set them based on the vals in storage
-    if par_dict['op_name'] == target_op.name:
+    # if par_dict['op_name'] == target_op.name:
+    if target_op.name.find( par_dict[ 'op_name' ] ) != -1:
         par_vals = par_dict['par_vals']
         for each_par, each_val in par_vals.items():
             targetPar = target_op.pars( each_par )
-            print('targetPar: ', targetPar )
+            # print('targetPar: ', targetPar )
             if targetPar != []:
-                if not targetPar[0].readOnly:
+                if not targetPar[0].readOnly or readOnly:
                     if targetPar[0].val != each_val:
                         targetPar[0].val = each_val
                     
