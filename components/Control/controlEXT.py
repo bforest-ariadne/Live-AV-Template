@@ -24,10 +24,33 @@ class ControlExtension():
 
         return
 
+    def ApplyParVals(self, message):
+        target = message.get('value').get('target')
+        msg = message.get('value').get('parDict')
+        # self.print('applyparvals')
+        # print(msg)
+        if msg.get( 'op_name', None ):
+            targetOp = root.findChildren(name=target)[0]
+            if targetOp:
+                parComMod.load_pars(msg, targetOp, readOnly=False)
+            return
+
     def OnChildParChange(self, par):
         # self.print('child par change')
         parDict = parComMod.page_to_dict( par.owner, 'Settings', [] )
-        self.com.Send_msg( parDict )
+        target = parDict['op_name'][:-1]
+        msg = {
+			'messagekind'	: "ApplyParVals",
+			'target'		: op.Com.Hostname,
+			'sender'		: op.Com.Hostname,
+			'output'		: None,
+			'parameter'		: None,
+			'value'			: {
+				"parDict"	: parDict,
+                "target"    : target
+			}
+		}
+        self.com.Send_msg( msg )
         return
 
     def adjustWidgets(self):

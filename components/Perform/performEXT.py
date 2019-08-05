@@ -376,7 +376,20 @@ class PerformExtension():
             # else:
             #     self.print( 'attr is not callable' )
         parDict = parComMod.page_to_dict( par.owner, 'Settings', [] )
-        self.com.Send_msg( parDict )
+        msg = {
+			'messagekind'	: "ApplyParVals",
+			'target'		: op.Com.Hostname,
+			'sender'		: op.Com.Hostname,
+			'output'		: None,
+			'parameter'		: None,
+			'value'			: {
+				"parDict"	: parDict,
+                "target"    : 'Perform1'
+			}
+		}
+        # print('performance')
+        # print( parDict )
+        self.com.Send_msg( msg )
         return
 
     def print(self, message):

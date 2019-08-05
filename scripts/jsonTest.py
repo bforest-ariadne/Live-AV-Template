@@ -29,9 +29,10 @@ else:
     p1 = op('/').create(containerCOMP)
     p1.name = msgDict['messageData']['opName']
 
-    
+
 TDJ.addParametersFromJSONDict(p1, msgDict['messageData']['pageDict'], replace=True, setValues=True, destroyOthers=True)
-        
+p1.op('autoUI').par.Generateui.pulse()        
+p1.op('ui')].par.reinitnet.pulse()
 
 
 

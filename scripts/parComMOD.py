@@ -41,75 +41,6 @@ def page_to_dict(target_op, target_page, ignore_list):
  
     return par_dict
 
-def dict_to_storage(target_op, storage_dict_key, op_name, dict_to_store):
-    ''' 
-        A reusable method for capturing parameters on a single page of a COMP
-    
-        Args
-        ---------------
-        target_op (TouchDesigner COMP):
-        > a ToughDesigner COMP that has custom parameters you would like to convert
-        > into a python dictionary.
-        
-        storage_dict_key (str):
-        > the string name of the storage dictionary you'd like to add
-        > your preset / cue to.
-    
-        op_name (str):
-        > a name for the preset / cue.
-        
-        dict_to_store (dict):
-        > a python dictionary to put into storage.
-                                
-        Returns
-        ---------------
-        None
-    '''
-    # grab the dictionary from storage
-    all_presets                 = target_op.fetch(storage_dict_key)
- 
-    # create a new entry
-    all_presets[op_name]    = dict_to_store
- 
-    # put dictionary back into storage
-    target_op.store(storage_dict_key, all_presets)
-
-def load_store_json(target_file, storage_op, target_key, storage_name):
-    ''' 
-        A Helper function that reads JSON from disk
-    
-        Args
-        ---------------
-        target_file (file path):
-        > a path to a .json file on disk. This is where the file will
-        > be read from.
-        
-        storage_op (TouchDesigner operator):
-        > the target operator where we will store the dictionary.
- 
-        target_key (str):
-        > the string key we want to pull from our JSON file.
- 
-        storage_name (str):
-        > the string name we want to use for storage.
-                                
-        Returns
-        ---------------
-        None
-    '''
- 
-    # open the json file
-    json_file               = open(target_file, 'r')
- 
-    # create a dictionary out of our json file
-    json_dict               = json.load(json_file).get(target_key)
- 
-    # store our dictionary in the target op
-    storage_op.store(storage_name, json_dict)
- 
-    # close the file
-    json_file.close()
-
 def write_dict_to_json(target_file, dict_to_save):
     ''' 
         A Helper function that writes JSON file to disk
@@ -140,20 +71,6 @@ def write_dict_to_json(target_file, dict_to_save):
     # close the file
     json_file.close()
 
-def load_preset(op_name, storage_op, target_op):
-
-    # safety to ensure we have a preset to use
-    try:
-        par_vals         = storage_op.fetch("presets")[op_name]
-    except:
-        print("This preset does not exist")
-
-    # loop through all pars and set them based on the vals in storage
-    for each_par, each_val in par_vals.items():
-        target_op.pars(each_par)[0].val = each_val
-
-    target_op.par.Presetname = op_name
-
 def load_pars(par_dict, target_op, readOnly=False):
 
     # safety to ensure we have a preset to use
@@ -167,7 +84,7 @@ def load_pars(par_dict, target_op, readOnly=False):
     sourceName = par_dict['op_name']
     if targetName[:-1].find( sourceName ) != -1 or sourceName[:-1].find( targetName ) != -1:
         if targetName != sourceName:
-            # print( 'source:', par_dict['op_name'], 'target:', target_op.name )
+            print( 'source:', par_dict['op_name'], 'target:', target_op.name )
             par_vals = par_dict['par_vals']
             for each_par, each_val in par_vals.items():
                 targetPar = target_op.pars( each_par )

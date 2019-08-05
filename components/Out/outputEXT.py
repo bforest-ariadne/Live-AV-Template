@@ -2,6 +2,7 @@ op = op  # pylint:disable=invalid-name,used-before-assignment
 root = root  # pylint:disable=invalid-name,used-before-assignment
 
 TDF = op.TDModules.mod.TDFunctions # utility functions
+TDJ = op.TDModules.mod.TDJSON
 parComMod = mod('/IO/base_com/parComMOD')
 
 class OutputExtension():
@@ -153,7 +154,20 @@ class OutputExtension():
             # else:
                 # self.print( 'attr is not callable: ' + par.name )
         parDict = parComMod.page_to_dict( par.owner, 'Settings', [] )
-        self.com.Send_msg( parDict )
+        # TDJ.jsonToDat( op.Out.op('text1'), parDict )
+        msg = {
+			'messagekind'	: "ApplyParVals",
+			'target'		: op.Com.Hostname,
+			'sender'		: op.Com.Hostname,
+			'output'		: None,
+			'parameter'		: None,
+			'value'			: {
+				"parDict"	: parDict,
+                "target"    : 'Perform1'
+			}
+		}
+        
+        self.com.Send_msg( msg )
         return
 
     def print(self, message):
