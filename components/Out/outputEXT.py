@@ -1,8 +1,8 @@
 op = op  # pylint:disable=invalid-name,used-before-assignment
 root = root  # pylint:disable=invalid-name,used-before-assignment
 
-from TDStoreTools import StorageManager # deeply dependable collections/storage
 TDF = op.TDModules.mod.TDFunctions # utility functions
+parComMod 		= mod('/IO/base_com/parComMOD')
 
 class OutputExtension():
 
@@ -15,10 +15,12 @@ class OutputExtension():
         self.onStart = { 'operator': None, 'method': None }
         self.onModeSet = { 'operator': None, 'method': None }
         self.States = [ 'Set', 'Setting' ]
-        self.State = self.Me.fetch( 'State' )
         self.Modes = root.findChildren(depth=1, tags=['Mode'])
         self.Me.store( 'Modes', self.Modes )
         self.Me.store( 'States', self.States )
+        self.State = self.Me.fetch( 'State' )
+        self.com = op('/IO/base_com')
+
         self.fadeInProg = op('./fadeInProg')
         self.fadeOutProg = op('./fadeOutProg')
         TDF.createProperty( self, 
@@ -92,8 +94,10 @@ class OutputExtension():
         return
 
     def GetModeNames(self):
+        self.ModeNames = []
         for mode in self.Modes:
             self.ModeNames.append( mode.name )
+        self.Me.store( 'ModeNames', self.ModeNames )
         return
     
     def OnRowChange(self, dat, rows):
@@ -148,6 +152,8 @@ class OutputExtension():
                 function()
             # else:
                 # self.print( 'attr is not callable: ' + par.name )
+        parDict = parComMod.page_to_dict( par.owner, 'Settings', [] )
+        self.com.Send_msg( parDict )
         return
 
     def print(self, message):

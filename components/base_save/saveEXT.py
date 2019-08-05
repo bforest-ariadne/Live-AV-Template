@@ -74,6 +74,9 @@ class ExternalFiles:
 
 		else:
 			# if we're not at the root of the project 
+
+			# add tox to msg
+			msg_box_msg += ': ' + op(str(current_loc)).par.externaltox.val
 			
 			# check if external
 			if current_loc.par.externaltox != '':

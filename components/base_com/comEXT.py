@@ -83,8 +83,9 @@ class Com:
 	def Receive_msg(self, str_msg):
 
 		json_msg 			= json.loads(str_msg)
-
-		parent().Processmessage(json_msg)
+		
+		if json_msg.get( 'messagekind', None ):
+			parent().Processmessage(json_msg)
 		pass
 
 	def Processmessage(self, message, debug=False):
