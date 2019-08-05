@@ -92,9 +92,10 @@ class Com:
 			# print('opname: ', json_msg.get( 'op_name', None )[:-1])
 			for mode in root.findChildren(maxDepth=1):
 				# print('opname: ', json_msg.get( 'op_name', None )[:-1], ' Modename: ', mode.name)
-				if json_msg.get( 'op_name', None )[:-1] == mode.name:
-					# print('mode message: ', mode.name)
-					json_msg[ 'op_name' ] = mode.name
+				sourceName = json_msg['op_name']
+				targetName = mode.name
+				if targetName[:-1].find( sourceName ) != -1 or sourceName[:-1].find( targetName ) != -1:
+					# print('coms', sourceName, targetName)
 					parComMod.load_pars(json_msg, mode, readOnly=False)
 
 		pass

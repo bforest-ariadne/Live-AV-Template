@@ -1,5 +1,5 @@
 import json
-
+# test
 def page_to_dict(target_op, target_page, ignore_list):
     ''' 
         A reusable method for capturing parameters on a single page of a COMP
@@ -163,17 +163,16 @@ def load_pars(par_dict, target_op, readOnly=False):
     #     print("This preset does not exist")
 
     # loop through all pars and set them based on the vals in storage
-    # if par_dict['op_name'] == target_op.name:
-    if target_op.name.find( par_dict[ 'op_name' ] ) != -1:
-        par_vals = par_dict['par_vals']
-        for each_par, each_val in par_vals.items():
-            targetPar = target_op.pars( each_par )
-            # print('targetPar: ', targetPar )
-            if targetPar != []:
-                if not targetPar[0].readOnly or readOnly:
-                    if targetPar[0].val != each_val:
-                        targetPar[0].val = each_val
-                    
-                    # target_op.pars(each_par)[0].val = each_val
-
-        # target_op.par.Presetname = op_name
+    targetName = target_op.name
+    sourceName = par_dict['op_name']
+    if targetName[:-1].find( sourceName ) != -1 or sourceName[:-1].find( targetName ) != -1:
+        if targetName != sourceName:
+            # print( 'source:', par_dict['op_name'], 'target:', target_op.name )
+            par_vals = par_dict['par_vals']
+            for each_par, each_val in par_vals.items():
+                targetPar = target_op.pars( each_par )
+                if targetPar != []:
+                    if not targetPar[0].readOnly or readOnly:
+                        if targetPar[0].val != each_val:
+                            # print('changed par: ', each_par, each_val, 'source:', par_dict[ 'op_name' ], 'target:', target_op.name, targetPar[0].val )
+                            targetPar[0].val = each_val

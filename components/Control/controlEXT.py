@@ -63,6 +63,7 @@ class ControlExtension():
             if child.name.find( msg.get( 'op_name', None ) ) != -1:
                 self.Msg = msg
                 readOnly = child.digits is not None
+                # self.print( 'readOnly: ' + str(readOnly))
                 parComMod.load_pars( msg, child, readOnly=readOnly )
 
         return
