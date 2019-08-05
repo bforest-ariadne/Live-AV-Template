@@ -38,17 +38,6 @@ class Com:
 
 		pass
 
-
-	def Role_setup(self, role_par):
-		if role_par == "node":
-			op('lfo1').bypass = True
-			pass
-		else:
-			op('lfo1').bypass = False
-			pass
-		pass
-
-
 	def Send_msg(self, pyobject):
 		'''
 		message = {
