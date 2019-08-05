@@ -3,6 +3,7 @@ root = root  # pylint:disable=invalid-name,used-before-assignment
 
 from TDStoreTools import StorageManager # deeply dependable collections/storage
 TDF = op.TDModules.mod.TDFunctions # utility functions
+parComMod = mod('/IO/base_com/parComMOD')
 
 class PerformExtension():
 
@@ -18,6 +19,7 @@ class PerformExtension():
         self.onSceneChange = { 'operator': None, 'method': None }
         self.nodes = []
         self.scenes = []
+        self.com = op('/IO/base_com')
         self.States = [ 'Starting', 'Started', 'Stopping', 'Stopped' ]
         self.State = self.Me.fetch( 'State' )
         self.CurrentScene = self.Me.fetch('CurrentScene')
@@ -332,6 +334,8 @@ class PerformExtension():
                 function()
             else:
                 self.print( 'attr is not callable' )
+        parDict = parComMod.page_to_dict( par.owner, 'Settings', [] )
+        self.com.Send_msg( parDict )
         return
 
     def print(self, message):

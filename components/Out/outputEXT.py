@@ -2,7 +2,7 @@ op = op  # pylint:disable=invalid-name,used-before-assignment
 root = root  # pylint:disable=invalid-name,used-before-assignment
 
 TDF = op.TDModules.mod.TDFunctions # utility functions
-parComMod 		= mod('/IO/base_com/parComMOD')
+parComMod = mod('/IO/base_com/parComMOD')
 
 class OutputExtension():
 
