@@ -84,14 +84,14 @@ def load_pars(par_dict, target_op, readOnly=False):
     sourceName = par_dict['op_name']
     if targetName[:-1].find( sourceName ) != -1 or sourceName[:-1].find( targetName ) != -1:
         if targetName != sourceName:
-            print( 'source:', par_dict['op_name'], 'target:', target_op.name )
+            # print( 'source:', par_dict['op_name'], 'target:', target_op.name )
             par_vals = par_dict['par_vals']
             for each_par, each_val in par_vals.items():
                 targetPar = target_op.pars( each_par )
                 if targetPar != []:
                     if not targetPar[0].readOnly or readOnly:
                         if targetPar[0].val != each_val:
-                            # print('changed par: ', each_par, each_val, 'source:', par_dict[ 'op_name' ], 'target:', target_op.name, targetPar[0].val )
+                            print('changed par: ', each_par, each_val, 'source:', par_dict[ 'op_name' ], 'target:', target_op.name, targetPar[0].val )
                             targetPar[0].val = each_val
                             if targetPar[0].isPulse:
                                 targetPar[0].pulse()

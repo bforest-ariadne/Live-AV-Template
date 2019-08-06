@@ -25,6 +25,10 @@ class ControlExtension():
         self.AdjustWidgets = self.adjustWidgets
 
         return
+    
+    def updateChildren(self):
+        self.children = self.Me.findChildren(type=containerCOMP, maxDepth=2)
+        return
 
     def ApplyParVals(self, message):
         target = message.get('value').get('target')
@@ -37,6 +41,8 @@ class ControlExtension():
         return
 
     def ApplyPars(self, message):
+        self.print('ApplyPars')
+
         target = message.get('value').get('target')
         msg = message.get('value').get('pageDict')
         parOrder = message.get('value').get('parOrder')
@@ -67,6 +73,7 @@ class ControlExtension():
         autoUI.par.Generateui.pulse()        
         # targetOp.op('ui').par.reinitnet.pulse()
         self.adjustWidgets()
+        self.updateChildren()
 
         return
 

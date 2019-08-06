@@ -163,10 +163,32 @@ class OutputExtension():
 			'parameter'		: None,
 			'value'			: {
 				"parDict"	: parDict,
-                "target"    : 'Perform1'
+                "target"    : self.name+'1'
 			}
 		}
         
+        self.com.Send_msg( msg )
+        return
+
+    def OnParsChange(self):
+        performSettings = TDJ.pageToJSONDict( self.Me.customPages[0], ['val', 'order'] )
+        pars = self.Me.customPages[0].pars
+        parOrder = []
+        for par in pars:
+            parOrder.append( par.name )
+        
+        msg = {
+			'messagekind'	: "ApplyPars",
+			'target'		: op.Com.Hostname,
+			'sender'		: op.Com.Hostname,
+			'output'		: None,
+			'parameter'		: None,
+			'value'			: {
+				'pageDict'  : performSettings,
+                "target"    : self.name+'1',
+                'parOrder'     : parOrder,
+			}
+		}
         self.com.Send_msg( msg )
         return
 
