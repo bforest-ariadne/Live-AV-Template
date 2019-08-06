@@ -33,15 +33,34 @@ class PerformExtension():
 
     status(str)
         prints name + message
-
-
     
-    OnModeStop()
-        a callback method fired when the current mode has stopped
+    Start(operator=None, method=None, index=None, name=None)
+        Starts the perform mode, transitioning from blank scene to current scene. Called by "Start" custom parameter.
 
-    OnModeStart()
-        a callback method fired when the new mode has started
+    Stop(operator=None, method=None)
+        Stops the perform mode, transitioning from the current scene to the blank scene. Called by "Stop" custom parameter.
 
+    Nextsceneindex()
+        Called by the "Next Scene" custom parameter. Sets the next scene index and updates Fade in and Fadeout custom parameters
+
+    Changetonextscene()
+        Startes scene change to scene selected by "Next Scene" index custom parameter
+    
+    ChangeScene( index=None, name='scene1', blank=False, operator=None, method=None, fadein=None, fadeout=None)
+        Called by "Change Scene" custom parameter. This is the main method to start a scene transition. 
+
+    ContinueSceneChange()
+        a callback method fired when the current scene has stopped
+
+    OnCurrentSceneStart()
+        a callback method fired when the new scene has started
+    
+    OnStart()
+        a callback method fired when the Perform mode has started
+    
+    OnStop()
+        a callback method fired when the Perform mode has started
+    
     OnRootVarsChange(dat, rows)
         updates paramater status - called by a datexecDAT when any root vars change.
 
@@ -67,7 +86,7 @@ class PerformExtension():
 
         self.print( 'init' )
         #  get list of scenes
-        self.GetScenes()
+        self.getScenes()
         #  default to scene1 if CurrentScene from storage not available
         if self.CurrentScene not in self.scenes:
             self.CurrentScene = self.scenes[0]
@@ -129,8 +148,8 @@ class PerformExtension():
             self.onStopped = { 'operator': operator, 'method': method }
 
             self.ChangeScene( blank = True, operator = self, method = 'OnStop')
-        
         return
+
     def getNextIndex(self):
         return self.Me.fetch( 'Nextsceneindex' )
 
@@ -139,6 +158,7 @@ class PerformExtension():
         nextScene = self.scenes[index]
         self.Me.par.Fadein.val = nextScene.par.Fadein.val
         self.Me.par.Fadeout.val = self.CurrentScene.par.Fadeout.val
+        return
     
     def Changetonextscene(self):
         return self.ChangeScene( self.getNextIndex() )
@@ -239,7 +259,6 @@ class PerformExtension():
             self.print( 'scene is already changing' )
 
     def initCurrentScene(self):
-        # self.GetScenes()
         self.print( 'StartCurrentScene init' )
 
         startedCount = 0
@@ -320,7 +339,7 @@ class PerformExtension():
                 scene.outputConnectors[0].disconnect()
         return
 
-    def GetScenes(self):
+    def getScenes(self):
         findScene = op('opfind_scene')
         scenePaths = findScene.cells('scene*', 'path')
         self.scenes = []
@@ -364,6 +383,8 @@ class PerformExtension():
             self.Me.store( 'Debug', val )
             self.Me.par.Debug.val = val
 
+    # TODO turn Fades, Fadein, and Fadeout into properties
+
     def Fades(self, value = None):
         
         if value is None:
@@ -396,8 +417,6 @@ class PerformExtension():
             function = getattr( self.Me, par.name )
             if callable( function ):
                 function()
-            # else:
-            #     self.print( 'attr is not callable' )
         return
 
     def OnValueChange(self, par):
@@ -406,8 +425,11 @@ class PerformExtension():
             function = getattr( self.Me, par.name )
             if callable( function ):
                 function()
-            # else:
-            #     self.print( 'attr is not callable' )
+        self.SendApplyParVals()
+        return
+
+    
+    def SendApplyParVals(self):
         parDict = parComMod.page_to_dict( par.owner, 'Settings', [] )
         msg = {
 			'messagekind'	: "ApplyParVals",
@@ -420,8 +442,6 @@ class PerformExtension():
                 "target"    : 'Perform1'
 			}
 		}
-        # print('performance')
-        # print( parDict )
         self.com.Send_msg( msg )
         return
 
