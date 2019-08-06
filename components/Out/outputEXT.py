@@ -166,8 +166,8 @@ class OutputExtension():
                 "target"    : self.name+'1'
 			}
 		}
-        
-        self.com.Send_msg( msg )
+        if self.Me.fetch('Ui'):
+            self.com.Send_msg( msg )
         return
 
     def OnParsChange(self):
@@ -189,7 +189,8 @@ class OutputExtension():
                 'parOrder'     : parOrder,
 			}
 		}
-        self.com.Send_msg( msg )
+        if self.Me.fetch('Ui'):
+            self.com.Send_msg( msg )
         return
 
     def print(self, message):
