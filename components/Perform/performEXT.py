@@ -8,7 +8,48 @@ parComMod = mod('/IO/base_com/parComMOD')
 
 class PerformExtension():
 
+    """ A class used to control the final output switchCOMP
 
+    Attributes
+    ----------
+    Me : td.COMP
+        a reference to the output Op
+    name : str
+        the name of the Op
+    States : list
+        strings representing the possible states of the op
+    State : str
+        a string representing the current state of the op
+    com : td.COMP
+        the base_com tox that will be used for comunication
+
+    Methods
+    -------
+    Test()
+        prints a test message
+
+    print(str)
+        prints name + message
+
+    status(str)
+        prints name + message
+
+
+    
+    OnModeStop()
+        a callback method fired when the current mode has stopped
+
+    OnModeStart()
+        a callback method fired when the new mode has started
+
+    OnRootVarsChange(dat, rows)
+        updates paramater status - called by a datexecDAT when any root vars change.
+
+    OnRootVarsChange()
+        updates paramater Mode menus and Modes list. called by a datexecDAT callback
+    
+
+    """
     def __init__(self, my_op):
         self.Me = my_op
         self.name = my_op.name
