@@ -28,28 +28,35 @@ class OutputExtension():
         return
 
     def Setmodegoal(self, Modegoal=None, operator=None, method=None):
+
+        # Only start modeChange if not already setting
         if self.State == 'Set':
             self.State = 'Setting' 
 
             # change Modegoal var
+            # check Modegoal argument
             if Modegoal is not None and Modegoal in self.ModeNames:
                 self.Me.store( 'Setmodegoal', Modegoal )
             elif Modegoal is None:
                 root.setVar( 'Modegoal', self.Me.fetch('Setmodegoal') )
             
+            # make sure Modegoal is not Mode
             if root.var( 'Mode' ) != root.var( 'Modegoal' ):
 
+                # set onModeSet callback
                 self.onModeSet = { 'operator': operator, 'method': method }
 
                 # send stop to current mode with stop callback
-                # self.OnModeStop()
-                self.print('mode change start: ' + root.var('Modegoal') )
+                self.status('mode change start: ' + root.var('Modegoal') )
                 modeOp = op( '/' + root.var('Mode') )
+
+                # stop current mode, if already stopped continue with mode change
                 if modeOp.State == 'Started':
                     modeOp.Stop( self, 'OnModeStop')
                 else:
                     self.OnModeStop()
                 return True
+            # reset Modegoal and state since Mode is not changing
             root.setVar( 'Modegoal', 'None' )
             self.State = 'Set'
             return False
@@ -93,7 +100,6 @@ class OutputExtension():
         return
     
     def OnRowChange(self, dat, rows):
-        self.print('rowChange')
         self.refreshVarPars()
         for row in rows:
             cells = dat.row( row )
@@ -142,8 +148,6 @@ class OutputExtension():
             function = getattr( self.Me, par.name )
             if callable( function ):
                 function()
-            # else:
-                # self.print( 'attr is not callable: ' + par.name  )
         return
 
     def OnValueChange(self, par):
@@ -152,14 +156,12 @@ class OutputExtension():
             function = getattr( self.Me, par.name )
             if callable( function ):
                 function()
-            # else:
-                # self.print( 'attr is not callable: ' + par.name )
         self.SendApplyParVals()
         return
 
     def SendApplyParVals(self):
         parDict = parComMod.page_to_dict( self.Me, 'Settings', [] )
-        # TDJ.jsonToDat( op.Out.op('text1'), parDict )
+
         msg = {
 			'messagekind'	: "ApplyParVals",
 			'target'		: op.Com.Hostname,
@@ -187,8 +189,6 @@ class OutputExtension():
         parOrder = []
         for par in pars:
             parOrder.append( par.name )
-
-        # print( 'Out parsDict', pageDict )
         
         msg = {
 			'messagekind'	: "ApplyPars",
@@ -208,6 +208,10 @@ class OutputExtension():
         return
 
     def print(self, message):
+        print( self.name + ': ', message )
+        return
+
+    def status(self, message):
         print( self.name + ': ', message )
         return
 
