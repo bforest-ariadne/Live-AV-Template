@@ -1,6 +1,7 @@
 op = op  # pylint:disable=invalid-name,used-before-assignment
 root = root  # pylint:disable=invalid-name,used-before-assignment
 parComMod = mod('/Control/base_com/parComMOD')
+TDJ = op.TDModules.mod.TDJSON
 import socket
 import json
 
@@ -21,19 +22,53 @@ class ControlExtension():
         self.fontColor = [0.913725, 1, 0, 1]
         self.com = op('/Control/base_com')
         self.adjustWidgets()
+        self.AdjustWidgets = self.adjustWidgets
 
         return
 
     def ApplyParVals(self, message):
         target = message.get('value').get('target')
         msg = message.get('value').get('parDict')
-        # self.print('applyparvals')
-        # print(msg)
+
         if msg.get( 'op_name', None ):
             targetOp = root.findChildren(name=target)[0]
             if targetOp:
                 parComMod.load_pars(msg, targetOp, readOnly=False)
-            return
+        return
+
+    def ApplyPars(self, message):
+        target = message.get('value').get('target')
+        msg = message.get('value').get('pageDict')
+        parOrder = message.get('value').get('parOrder')
+
+        children = self.Me.op('ui').findChildren( name = target, maxDepth = 1 )
+        targetOp = None
+        created = False
+        if children != []:
+            for child in children:
+                if child.name != target:
+                    targetOp = self.Me.op('ui').copy( self.Me.op('template') )
+                    # targetOp.name = target
+                    created = True
+                else:
+                    targetOp = child
+        else:
+            targetOp = self.Me.op('ui').copy( self.Me.op('template') )
+            targetOp.name = target
+            created = True
+        
+        # self.print('targetOp: ' + targetOp)
+        TDJ.addParametersFromJSONDict(targetOp, msg, replace=True, setValues=True, destroyOthers=True)
+        targetOp.customPages[0].sort(*parOrder)
+        
+        if created:
+            autoUI = targetOp.loadTox(root.var('TOUCH') +'/components/autoUI.tox' ) 
+        autoUI = targetOp.op('autoUI')
+        autoUI.par.Generateui.pulse()        
+        # targetOp.op('ui').par.reinitnet.pulse()
+        self.adjustWidgets()
+
+        return
 
     def OnChildParChange(self, par):
         # self.print('child par change')
@@ -58,18 +93,20 @@ class ControlExtension():
         for widget in self.widgets:
             # self.print('widget: ' + widget.name )
             if widget.pars('Value0') != []:
-                if widget.par.Value0.bindMaster.readOnly:
-                    # self.print('readOnly par: ' + widget.name)
-                    fontColorParNames = ['*fontcolor*', '*fontoffcolor*']
-                    for fontColorParName in fontColorParNames:
-                        fontColorPars = widget.pars(fontColorParName)
-                        # self.print(fontColorPars)
-                        if fontColorPars != []:
-                            fontColors = ['*fontcolorr', '*fontcolorg', '*fontcolorb', '*fontcolora']
-                            for i in range(len(fontColors)):
-                                fontColorSingle = widget.pars( fontColors[i] )
-                                for fontPar in fontColorSingle:
-                                    fontPar.val = self.fontColor[i]
+                # print( widget.par.Value0 )
+                if True:
+                    if widget.par.Value0.bindMaster.readOnly:
+                        # self.print('readOnly par: ' + widget.name)
+                        fontColorParNames = ['*fontcolor*', '*fontoffcolor*']
+                        for fontColorParName in fontColorParNames:
+                            fontColorPars = widget.pars(fontColorParName)
+                            # self.print(fontColorPars)
+                            if fontColorPars != []:
+                                fontColors = ['*fontcolorr', '*fontcolorg', '*fontcolorb', '*fontcolora']
+                                for i in range(len(fontColors)):
+                                    fontColorSingle = widget.pars( fontColors[i] )
+                                    for fontPar in fontColorSingle:
+                                        fontPar.val = self.fontColor[i]
                 else:
                     self.WriteableWidgets.append( widget )
         return    

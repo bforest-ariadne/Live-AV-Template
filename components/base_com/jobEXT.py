@@ -30,6 +30,10 @@ class Job(ComClass):
 		op.Control.ApplyParVals( msg )
 		pass
 
+	def ApplyPars(self, msg):
+		op.Control.ApplyPars( msg )
+		pass
+
 	# def Send_hb(self, msg):
 	# 	op.Heartbeat.Send_hb(msg)
 	# 	pass

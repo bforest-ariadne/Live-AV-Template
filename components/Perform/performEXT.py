@@ -3,6 +3,7 @@ root = root  # pylint:disable=invalid-name,used-before-assignment
 
 from TDStoreTools import StorageManager # deeply dependable collections/storage
 TDF = op.TDModules.mod.TDFunctions # utility functions
+TDJ = op.TDModules.mod.TDJSON
 parComMod = mod('/IO/base_com/parComMOD')
 
 class PerformExtension():
@@ -389,6 +390,28 @@ class PerformExtension():
 		}
         # print('performance')
         # print( parDict )
+        self.com.Send_msg( msg )
+        return
+
+    def OnParsChange(self):
+        performSettings = TDJ.pageToJSONDict( self.Me.customPages[0], ['val', 'order'] )
+        pars = self.Me.customPages[0].pars
+        parOrder = []
+        for par in pars:
+            parOrder.append( par.name )
+        
+        msg = {
+			'messagekind'	: "ApplyPars",
+			'target'		: op.Com.Hostname,
+			'sender'		: op.Com.Hostname,
+			'output'		: None,
+			'parameter'		: None,
+			'value'			: {
+				'pageDict'  : performSettings,
+                "target"    : 'Perform1',
+                'parOrder'     : parOrder,
+			}
+		}
         self.com.Send_msg( msg )
         return
 
