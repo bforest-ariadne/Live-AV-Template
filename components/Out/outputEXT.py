@@ -3,17 +3,14 @@ root = root  # pylint:disable=invalid-name,used-before-assignment
 
 TDF = op.TDModules.mod.TDFunctions # utility functions
 TDJ = op.TDModules.mod.TDJSON
-parComMod = mod('/IO/base_com/parComMOD')
-# test
+parComMod = mod('/scripts/parComMOD')
 
 class OutputExtension():
 
     def __init__(self, my_op):
         self.Me = my_op
-        #test4
         self.name = my_op.name
         self.print('init')
-
         self.onModeSet = { 'operator': None, 'method': None }
         self.States = [ 'Set', 'Setting' ]
         self.Modes = root.findChildren(depth=1, tags=['Mode'])
@@ -21,17 +18,6 @@ class OutputExtension():
         self.Me.store( 'States', self.States )
         self.State = self.Me.fetch( 'State' )
         self.com = op('/IO/base_com')
-
-        self.fadeInProg = op('./fadeInProg')
-        self.fadeOutProg = op('./fadeOutProg')
-        TDF.createProperty( self, 
-            'FadeInProgSel', 
-            value=op('/' + root.var('Modegoal') ).FadeInProg if root.var('Modegoal') != 'None' else op('constant1'), 
-            dependable=True)
-        TDF.createProperty( self, 
-            'FadeOutProgSel', 
-            value=op('/' + root.var('Mode') ).FadeOutProg, 
-            dependable=True)
         self.ModeNames = []
         self.GetModeNames()
         self.Setmodegoal()
@@ -113,25 +99,14 @@ class OutputExtension():
             cells = dat.row( row )
             varName = cells[0]
             varVal = cells[1]
-            # print( 'var: ', varName, ' val: ', varVal )
             customPars = self.Me.customPars
             for par in customPars:
                 if par.name == varName:
                     par.val = varVal
-                    self.updateProgressSelect()
 
     def refreshVarPars(self):
         self.Me.par.Mode = root.var('Mode')
         self.Me.par.Modegoal = root.var('Modegoal')
-        return
-                    
-    
-    def updateProgressSelect(self):
-        if root.var('Modegoal') != 'None':
-            self.FadeInProgSel = op('/' + root.var('Modegoal') ).FadeInProg
-        else:
-            self.FadeInProgSel = op('constant1')
-        self.FadeOutProgSel = op('/' + root.var('Mode') ).FadeOutProg
         return
 
     @property
