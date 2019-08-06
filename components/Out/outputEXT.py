@@ -6,11 +6,60 @@ TDJ = op.TDModules.mod.TDJSON
 parComMod = mod('/scripts/parComMOD')
 
 class OutputExtension():
+    
+    """ A class used to control the final output switchCOMP
 
+    Attributes
+    ----------
+    Me : td.COMP
+        a reference to the output Op
+    name : str
+        the name of the Op
+    onModeSet : dict
+        a callback that is fired when the Mod has set
+        keys: 'operator', 'method'
+    States : list
+        strings representing the possible states of the op
+    Modes : list
+        a list of Mode tagged ops in the root dir
+    ModeNames : list
+        a list of names of the Modes in Modes
+    State : str
+        a string representing the current state of the op
+    com : td.COMP
+        the base_com tox that will be used for comunication
+
+    Methods
+    -------
+    Test()
+        prints a test message
+
+    print(str)
+        prints name + message
+
+    status(str)
+        prints name + message
+
+    Setmodegoal(self, Modegoal=None, operator=None, method=None)
+        Starts the process of setting the new mode (Modegoal)
+    
+    OnModeStop()
+        a callback method fired when the current mode has stopped
+
+    OnModeStart()
+        a callback method fired when the new mode has started
+
+    OnRootVarsChange(dat, rows)
+        updates paramater status - called by a datexecDAT when any root vars change.
+
+    OnRootVarsChange()
+        updates paramater Mode menus and Modes list. called by a datexecDAT callback
+    
+
+    """
     def __init__(self, my_op):
         self.Me = my_op
         self.name = my_op.name
-        self.print('init')
         self.onModeSet = { 'operator': None, 'method': None }
         self.States = [ 'Set', 'Setting' ]
         self.Modes = root.findChildren(depth=1, tags=['Mode'])
@@ -19,7 +68,8 @@ class OutputExtension():
         self.State = self.Me.fetch( 'State' )
         self.com = op('/IO/base_com')
         self.ModeNames = []
-        self.GetModeNames()
+        self.status('init')
+        self.getModeNames()
         self.Setmodegoal()
         return
 
@@ -97,14 +147,14 @@ class OutputExtension():
         self.callback( self.onModeSet )
         return
 
-    def GetModeNames(self):
+    def getModeNames(self):
         self.ModeNames = []
         for mode in self.Modes:
             self.ModeNames.append( mode.name )
         self.Me.store( 'ModeNames', self.ModeNames )
         return
     
-    def OnRowChange(self, dat, rows):
+    def OnRootVarsChange(self, dat, rows):
         self.refreshVarPars()
         for row in rows:
             cells = dat.row( row )
@@ -137,7 +187,7 @@ class OutputExtension():
     def OnModesChange(self):
         self.print('modes change')
         self.Modes = root.findChildren(depth=1, tags=['Mode'])
-        self.GetModeNames()
+        self.getModeNames()
         menuPars = ['Mode', 'Modegoal', 'Setmodegoal']
         for menuName in menuPars:
             menu = self.Me.pars(menuName)[0]
