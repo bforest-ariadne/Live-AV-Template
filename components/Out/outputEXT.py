@@ -113,7 +113,7 @@ class OutputExtension():
             cells = dat.row( row )
             varName = cells[0]
             varVal = cells[1]
-            print( 'var: ', varName, ' val: ', varVal )
+            # print( 'var: ', varName, ' val: ', varVal )
             customPars = self.Me.customPars
             for par in customPars:
                 if par.name == varName:
@@ -183,7 +183,7 @@ class OutputExtension():
 			}
 		}
         if self.Me.fetch('Uipars'):
-            self.print('send applyParVals')
+            # self.print('send applyParVals')
             self.com.Send_msg( msg )
         return
 
@@ -199,7 +199,7 @@ class OutputExtension():
         for par in pars:
             parOrder.append( par.name )
 
-        print( 'Out parsDict', pageDict )
+        # print( 'Out parsDict', pageDict )
         
         msg = {
 			'messagekind'	: "ApplyPars",
@@ -214,7 +214,7 @@ class OutputExtension():
 			}
 		}
         if self.Me.fetch('Ui'):
-            self.print('SentApplyPars')
+            # self.print('SentApplyPars')
             self.com.Send_msg( msg )
         return
 

@@ -32,6 +32,8 @@ class ControlExtension():
         return
 
     def ApplyParVals(self, message, comsParent):
+        fromOp = message.get('value').get('parDict').get( 'op_name' )
+        
         self.updateChildren()
         target = message.get('value').get('target')
         msg = message.get('value').get('parDict')
@@ -52,8 +54,10 @@ class ControlExtension():
             if targetOp:
                 # update readonly parameters if target is in the Control op
                 readOnly = targetOp in self.children
+                # self.print( 'ApplyParVals - coms: ' + comsParent.name + ' from: ' + fromOp )
+                # self.print( '   readOnly: ' + str(readOnly) )
                 parComMod.load_pars(msg, targetOp, readOnly=readOnly)
-                self.print('end ApplyParVals')
+                # self.print('end ApplyParVals')
         return
 
     def ApplyPars(self, message):
@@ -81,17 +85,17 @@ class ControlExtension():
         
         # self.print('targetOp: ' + targetOp)
         TDJ.addParametersFromJSONDict(targetOp, msg, replace=True, setValues=True, destroyOthers=True)
-        # targetOp.customPages[0].sort(*parOrder)
-        self.print('ApplyPars - after addParameterJson')
+        targetOp.customPages[0].sort(*parOrder)
+        # self.print('ApplyPars - after addParameterJson')
         
         if created:
             autoUI = targetOp.loadTox(root.var('TOUCH') +'/components/autoUI.tox' ) 
         autoUI = targetOp.op('autoUI')
         autoUI.par.Generateui.pulse()
-        self.print('ApplyPars - after generate UI')
+        # self.print('ApplyPars - after generate UI')
         # targetOp.op('ui').par.reinitnet.pulse()
         self.adjustWidgets()
-        self.print('ApplyPars - end - after adjustWidgets')
+        # self.print('ApplyPars - end - after adjustWidgets')
         self.updateChildren()
         self.SetParDatActive(True)
 
@@ -110,8 +114,8 @@ class ControlExtension():
         return
 
     def OnChildParChange(self, par):
-        self.print('child par change')
-        print( '    par changed:', par.name, par.val )
+        # self.print('child par change')
+        # print( '    par changed:', par.name, par.val )
         parDict = parComMod.page_to_dict( par.owner, 'Settings', [] )
         target = parDict['op_name'][:-1]
         msg = {
@@ -132,7 +136,7 @@ class ControlExtension():
         self.WriteableWidgets = []
         for widget in self.widgets:
             # self.print('widget: ' + widget.name )
-            if widget.pars('Value0') != []:
+            if hasattr(widget.par, 'Value0'):
                 # print( widget.par.Value0 )
                 if widget.par.Value0.bindMaster.readOnly:
                     self.changeFontColor( widget, self.readOnlyFontColor )
