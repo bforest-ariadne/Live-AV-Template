@@ -1,6 +1,6 @@
 op = op  # pylint:disable=invalid-name,used-before-assignment
 root = root  # pylint:disable=invalid-name,used-before-assignment
-parComMod = mod('/Control/base_com/parComMOD')
+parComMod = mod('/scripts/parComMOD')
 TDJ = op.TDModules.mod.TDJSON
 import socket
 import json
@@ -19,8 +19,9 @@ class ControlExtension():
         self.Widgets = self.widgets
         self.WriteableWidgets = []
         self.Msg = {}
-        self.fontColor = [0.913725, 1, 0, 1]
-        self.com = op('/Control/base_com')
+        self.readOnlyFontColor = [0.913725, 1, 0, 1]
+        self.fontColor = [0.65, 0.65, 0.65, 1]
+        self.com = op('/Control/base_com_control')
         self.adjustWidgets()
         self.AdjustWidgets = self.adjustWidgets
 
@@ -30,19 +31,34 @@ class ControlExtension():
         self.children = self.Me.findChildren(type=containerCOMP, maxDepth=2)
         return
 
-    def ApplyParVals(self, message):
+    def ApplyParVals(self, message, comsParent):
+        self.updateChildren()
         target = message.get('value').get('target')
         msg = message.get('value').get('parDict')
 
+        rootOp = self.Me if comsParent.name == 'Control' else root
+
+        # self.print('ApplyParVals - ' + rootOp.name )
         if msg.get( 'op_name', None ):
-            targetOp = root.findChildren(name=target)[0]
+            targetOps = rootOp.findChildren(name=target)
+            if targetOps == []:
+                return
+            try:
+                assert( len(targetOps) <= 1 )
+            except AssertionError as error:
+                print(error)
+                self.print( 'there should be only one potential targetOp' )    
+            targetOp = targetOps[0]
             if targetOp:
-                parComMod.load_pars(msg, targetOp, readOnly=False)
+                # update readonly parameters if target is in the Control op
+                readOnly = targetOp in self.children
+                parComMod.load_pars(msg, targetOp, readOnly=readOnly)
+                self.print('end ApplyParVals')
         return
 
     def ApplyPars(self, message):
-        self.print('ApplyPars')
-
+        
+        self.SetParDatActive(False)
         target = message.get('value').get('target')
         msg = message.get('value').get('pageDict')
         parOrder = message.get('value').get('parOrder')
@@ -65,20 +81,37 @@ class ControlExtension():
         
         # self.print('targetOp: ' + targetOp)
         TDJ.addParametersFromJSONDict(targetOp, msg, replace=True, setValues=True, destroyOthers=True)
-        targetOp.customPages[0].sort(*parOrder)
+        # targetOp.customPages[0].sort(*parOrder)
+        self.print('ApplyPars - after addParameterJson')
         
         if created:
             autoUI = targetOp.loadTox(root.var('TOUCH') +'/components/autoUI.tox' ) 
         autoUI = targetOp.op('autoUI')
-        autoUI.par.Generateui.pulse()        
+        autoUI.par.Generateui.pulse()
+        self.print('ApplyPars - after generate UI')
         # targetOp.op('ui').par.reinitnet.pulse()
         self.adjustWidgets()
+        self.print('ApplyPars - end - after adjustWidgets')
         self.updateChildren()
+        self.SetParDatActive(True)
 
         return
 
+    def SetParDatActive(self, state):
+        try:
+            assert( type(state) == bool )
+        except AssertionError as error:
+            print(error)
+            print('state must be type bool')
+
+        parExecDats = self.Me.findChildren(type=parameterexecuteDAT)
+        for dat in parExecDats:
+            dat.par.active = state
+        return
+
     def OnChildParChange(self, par):
-        # self.print('child par change')
+        self.print('child par change')
+        print( '    par changed:', par.name, par.val )
         parDict = parComMod.page_to_dict( par.owner, 'Settings', [] )
         target = parDict['op_name'][:-1]
         msg = {
@@ -89,7 +122,7 @@ class ControlExtension():
 			'parameter'		: None,
 			'value'			: {
 				"parDict"	: parDict,
-                "target"    : target
+                "target"    : target,
 			}
 		}
         self.com.Send_msg( msg )
@@ -101,24 +134,29 @@ class ControlExtension():
             # self.print('widget: ' + widget.name )
             if widget.pars('Value0') != []:
                 # print( widget.par.Value0 )
-                if True:
-                    if widget.par.Value0.bindMaster.readOnly:
-                        # self.print('readOnly par: ' + widget.name)
-                        fontColorParNames = ['*fontcolor*', '*fontoffcolor*']
-                        for fontColorParName in fontColorParNames:
-                            fontColorPars = widget.pars(fontColorParName)
-                            # self.print(fontColorPars)
-                            if fontColorPars != []:
-                                fontColors = ['*fontcolorr', '*fontcolorg', '*fontcolorb', '*fontcolora']
-                                for i in range(len(fontColors)):
-                                    fontColorSingle = widget.pars( fontColors[i] )
-                                    for fontPar in fontColorSingle:
-                                        fontPar.val = self.fontColor[i]
+                if widget.par.Value0.bindMaster.readOnly:
+                    self.changeFontColor( widget, self.readOnlyFontColor )
                 else:
+                    self.changeFontColor( widget, self.fontColor )
                     self.WriteableWidgets.append( widget )
-        return    
+        return
+    
+    def changeFontColor(self, widget, color):
+        # self.print('readOnly par: ' + widget.name)
+        fontColorParNames = ['*fontcolor*', '*fontoffcolor*']
+        for fontColorParName in fontColorParNames:
+            fontColorPars = widget.pars(fontColorParName)
+            # self.print(fontColorPars)
+            if fontColorPars != []:
+                fontColors = ['*fontcolorr', '*fontcolorg', '*fontcolorb', '*fontcolora']
+                for i in range(len(fontColors)):
+                    fontColorSingle = widget.pars( fontColors[i] )
+                    for fontPar in fontColorSingle:
+                        fontPar.val = color[i]
+        return
 
     def OnReceive(self, dat, rowIndex, message, bytes, peer):
+        self.print('OnReceive')
         json_msg = json.loads(message)
 		
         if json_msg.get( 'op_name', None ):

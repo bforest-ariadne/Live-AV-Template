@@ -394,7 +394,7 @@ class PerformExtension():
         return
 
     def OnParsChange(self):
-        performSettings = TDJ.pageToJSONDict( self.Me.customPages[0], ['val', 'order'] )
+        pageDict = TDJ.pageToJSONDict( self.Me.customPages[0], ['val', 'order'] )
         pars = self.Me.customPages[0].pars
         parOrder = []
         for par in pars:
@@ -407,11 +407,12 @@ class PerformExtension():
 			'output'		: None,
 			'parameter'		: None,
 			'value'			: {
-				'pageDict'  : performSettings,
+				'pageDict'  : pageDict,
                 "target"    : 'Perform1',
                 'parOrder'     : parOrder,
 			}
 		}
+        self.print('applyPars message sent')
         self.com.Send_msg( msg )
         return
 

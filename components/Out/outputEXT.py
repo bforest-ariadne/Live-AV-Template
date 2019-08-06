@@ -57,6 +57,7 @@ class OutputExtension():
 
                 # send stop to current mode with stop callback
                 # self.OnModeStop()
+                self.print('mode change start: ' + root.var('Modegoal') )
                 modeOp = op( '/' + root.var('Mode') )
                 if modeOp.State == 'Started':
                     modeOp.Stop( self, 'OnModeStop')
@@ -87,7 +88,11 @@ class OutputExtension():
     def OnModeStart(self):
         self.print('OnModeStart')
         # change mode to modegoal
-        root.setVar( 'Mode', root.var( 'Modegoal' ) )
+        newMode = root.var('Modegoal')
+        if newMode == 'None':
+            debug( 'tried to switch Mode to None')
+        else:
+            root.setVar( 'Mode', root.var( 'Modegoal' ) )
         # change modegoal to None
         root.setVar( 'Modegoal', 'None' )
         self.State = 'Set' 
@@ -102,16 +107,23 @@ class OutputExtension():
         return
     
     def OnRowChange(self, dat, rows):
+        self.print('rowChange')
+        self.refreshVarPars()
         for row in rows:
             cells = dat.row( row )
             varName = cells[0]
             varVal = cells[1]
-            # print( 'var: ', varName, ' val: ', varVal )
+            print( 'var: ', varName, ' val: ', varVal )
             customPars = self.Me.customPars
             for par in customPars:
                 if par.name == varName:
                     par.val = varVal
                     self.updateProgressSelect()
+
+    def refreshVarPars(self):
+        self.Me.par.Mode = root.var('Mode')
+        self.Me.par.Modegoal = root.var('Modegoal')
+        return
                     
     
     def updateProgressSelect(self):
@@ -153,7 +165,11 @@ class OutputExtension():
                 function()
             # else:
                 # self.print( 'attr is not callable: ' + par.name )
-        parDict = parComMod.page_to_dict( par.owner, 'Settings', [] )
+        self.SendApplyParVals()
+        return
+
+    def SendApplyParVals(self):
+        parDict = parComMod.page_to_dict( self.Me, 'Settings', [] )
         # TDJ.jsonToDat( op.Out.op('text1'), parDict )
         msg = {
 			'messagekind'	: "ApplyParVals",
@@ -166,16 +182,24 @@ class OutputExtension():
                 "target"    : self.name+'1'
 			}
 		}
-        if self.Me.fetch('Ui'):
+        if self.Me.fetch('Uipars'):
+            self.print('send applyParVals')
             self.com.Send_msg( msg )
         return
 
     def OnParsChange(self):
-        performSettings = TDJ.pageToJSONDict( self.Me.customPages[0], ['val', 'order'] )
+        self.SendApplyPars()
+        self.SendApplyParVals()
+        return
+
+    def SendApplyPars(self):
+        pageDict = TDJ.pageToJSONDict( self.Me.customPages[0], ['val', 'order'] )
         pars = self.Me.customPages[0].pars
         parOrder = []
         for par in pars:
             parOrder.append( par.name )
+
+        print( 'Out parsDict', pageDict )
         
         msg = {
 			'messagekind'	: "ApplyPars",
@@ -184,12 +208,13 @@ class OutputExtension():
 			'output'		: None,
 			'parameter'		: None,
 			'value'			: {
-				'pageDict'  : performSettings,
+				'pageDict'  : pageDict,
                 "target"    : self.name+'1',
                 'parOrder'     : parOrder,
 			}
 		}
         if self.Me.fetch('Ui'):
+            self.print('SentApplyPars')
             self.com.Send_msg( msg )
         return
 
