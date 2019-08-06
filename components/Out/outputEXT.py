@@ -65,12 +65,13 @@ class OutputExtension():
 
 
     def OnModeStop(self):
-        self.print('OnModeStop')
+        self.status( root.var('Mode') + ' Mode stopped. Starting ' + root.var('Modegoal') )
+
         # in stop callback switch output display to modegoal
         self.Me.par.opviewer = root.var( 'Modegoal' )
         self.Me.par.selectpanel = root.var( 'Modegoal' )
+
         # send start to modegoal with start callback
-        # self.OnModeStart()
         modeGoalOp =  op( '/' + root.var('Modegoal') )
         if modeGoalOp.State == 'Stopped':
             modeGoalOp.Start( self, 'OnModeStart')
@@ -79,15 +80,19 @@ class OutputExtension():
         return
     
     def OnModeStart(self):
-        self.print('OnModeStart')
+        self.status( root.var('Mode') + ' Starting')
+
         # change mode to modegoal
         newMode = root.var('Modegoal')
         if newMode == 'None':
             debug( 'tried to switch Mode to None')
         else:
             root.setVar( 'Mode', root.var( 'Modegoal' ) )
+
         # change modegoal to None
         root.setVar( 'Modegoal', 'None' )
+
+        # reset State and launch on set callback
         self.State = 'Set' 
         self.callback( self.onModeSet )
         return
