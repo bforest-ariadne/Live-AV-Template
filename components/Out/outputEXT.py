@@ -4,6 +4,7 @@ root = root  # pylint:disable=invalid-name,used-before-assignment
 TDF = op.TDModules.mod.TDFunctions # utility functions
 TDJ = op.TDModules.mod.TDJSON
 parComMod = mod('/IO/base_com/parComMOD')
+# test
 
 class OutputExtension():
 
@@ -12,8 +13,7 @@ class OutputExtension():
         #test4
         self.name = my_op.name
         self.print('init')
-        self.onStop = { 'operator': None, 'method': None }
-        self.onStart = { 'operator': None, 'method': None }
+
         self.onModeSet = { 'operator': None, 'method': None }
         self.States = [ 'Set', 'Setting' ]
         self.Modes = root.findChildren(depth=1, tags=['Mode'])
@@ -147,7 +147,21 @@ class OutputExtension():
                 self.Me.par.Setmodegoal.readOnly = True
             else:
                 self.Me.par.Setmodegoal.readOnly = False
-        
+
+    def OnModesChange(self):
+        self.print('modes change')
+        self.Modes = root.findChildren(depth=1, tags=['Mode'])
+        self.GetModeNames()
+        menuPars = ['Mode', 'Modegoal', 'Setmodegoal']
+        for menuName in menuPars:
+            menu = self.Me.pars(menuName)[0]
+            names = self.ModeNames
+            if menuName == 'Modegoal':
+                names.append('None')
+            menu.menuNames = names
+            menu.menuLabels = names
+        pass
+
     def OnPulse(self, par):
         if hasattr( self.Me, par.name ):
             function = getattr( self.Me, par.name )
