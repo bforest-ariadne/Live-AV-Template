@@ -7,6 +7,7 @@ parComMod = mod('/scripts/parComMOD')
 
 class OutputExtension():
     
+
     """ A class used to control the final output switchCOMP
 
     Attributes

@@ -8,57 +8,58 @@ parComMod = mod('/IO/base_com/parComMOD')
 
 class PerformExtension():
 
+
     def __init__(self, my_op):
         self.Me = my_op
         self.name = my_op.name
-        print('name: ', self.name )
-        #test
-        self.input = op('../input')
-        self.Me.store( 'Input', op('../input') )
-        self.onStop = { 'operator': None, 'method': None }
-        self.onStart = { 'operator': None, 'method': None }
+        self.onStopped = { 'operator': None, 'method': None }
+        self.onStarted = { 'operator': None, 'method': None }
         self.onSceneChange = { 'operator': None, 'method': None }
-        self.nodes = []
-        self.scenes = []
-        # TDF.createProperty( self, 
-        #     'Debug', 
-        #     value=False, 
-        #     dependable=True)
         self.Debug = False
         self.com = op('/IO/base_com')
         self.States = [ 'Starting', 'Started', 'Stopping', 'Stopped' ]
         self.State = self.Me.fetch( 'State' )
         self.CurrentScene = self.Me.fetch('CurrentScene')
-        self.BlankScene = op('../blank')
+        self.BlankScene = self.Me.op('blank')
+        self.input = op('../input')
+        self.scenes = []
+
+        self.print( 'init' )
+        #  get list of scenes
         self.GetScenes()
+        #  default to scene1 if CurrentScene from storage not available
         if self.CurrentScene not in self.scenes:
-            self.CurrentScene = op('../scene1') 
-        self.print( 'current scene: ' + self.CurrentScene.name )
-        # self.PreviousScene = None
+            self.CurrentScene = self.scenes[0]
+        self.print( 'init current scene: ' + self.CurrentScene.name )
+
+        # init previous scene as blank scene
         TDF.createProperty( self, 
             'PreviousScene', 
             value=self.BlankScene, 
             dependable=True)
+        # init next scene from Nextsceneindex par in storage
         TDF.createProperty( self, 
             'NewScene', 
             value=self.Me.fetch('Scenes')[ self.Me.fetch('Nextsceneindex') ], 
             dependable=True)
+        # init Changing state to False
         TDF.createProperty( self, 
             'Changing', 
             value=False, 
             dependable=True)
 
-        self.FadeInProg = op('../fadeInProg')
-        self.FadeOutProg = op('../fadeOutProg')
-
+        # init the Current scene if Mode == Perform and if State is Started
         if root.var('Mode') == 'Perform':
             if self.State == 'Started':
                 self.initCurrentScene()
+                # init Nextsceneindex to not the CurrentScene index
                 if self.Me.fetch( 'Nextsceneindex' ) == self.CurrentScene.Index:
                     self.Me.store( 'Nextsceneindex', self.CurrentScene.Index + 1 )
             else:
+                # Start Perform if Mode = Perform and not State is not Started
                 self.Start()
         else:
+            # if Mode is not Perform, stop Perform
             self.print('not perform mode')
             self.Stop()
         return
@@ -276,16 +277,6 @@ class PerformExtension():
         for scene in self.scenes:
             if scene != self.CurrentScene:
                 scene.outputConnectors[0].disconnect()
-        return
-
-    def disableNodes(self):
-        for node in self.nodes:
-            node.bypass = True
-        return
-
-    def enableNodes(self):
-        for node in self.nodes:
-            node.bypass = False
         return
 
     def GetScenes(self):
