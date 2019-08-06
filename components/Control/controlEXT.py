@@ -24,6 +24,7 @@ class ControlExtension():
         self.com = op('/Control/base_com_control')
         self.adjustWidgets()
         self.AdjustWidgets = self.adjustWidgets
+        self.PageDicts = {}
 
         return
     
@@ -67,6 +68,18 @@ class ControlExtension():
         msg = message.get('value').get('pageDict')
         parOrder = message.get('value').get('parOrder')
 
+        if self.PageDicts.get(target) is None:
+            self.PageDicts[target] = {'pageDict': msg }
+            # self.PageDicts[target]['pageDict'] = msg
+        if self.PageDicts[target].get('pastDict') is None:
+            # self.PageDicts[target] = {'pastDict': msg }
+            self.PageDicts[target]['pastDict'] = msg
+
+        self.PageDicts[target]['pastDict'] = self.PageDicts[target]['pageDict']
+        self.PageDicts[target]['pageDict'] = msg
+
+        reInitUi = len( self.PageDicts[target]['pastDict'] ) != len(self.PageDicts[target]['pageDict'])
+
         children = self.Me.op('ui').findChildren( name = target, maxDepth = 1 )
         targetOp = None
         created = False
@@ -87,11 +100,13 @@ class ControlExtension():
         TDJ.addParametersFromJSONDict(targetOp, msg, replace=True, setValues=True, destroyOthers=True)
         targetOp.customPages[0].sort(*parOrder)
         # self.print('ApplyPars - after addParameterJson')
-        
+        autoUI = None
         if created:
             autoUI = targetOp.loadTox(root.var('TOUCH') +'/components/autoUI.tox' ) 
         autoUI = targetOp.op('autoUI')
-        autoUI.par.Generateui.pulse()
+        if created or reInitUi:
+            self.print('autoUI pulsed. created: ' + str(created) + ' reInitUi: ' + str(reInitUi) )
+            autoUI.par.Generateui.pulse()
         # self.print('ApplyPars - after generate UI')
         # targetOp.op('ui').par.reinitnet.pulse()
         self.adjustWidgets()
@@ -134,6 +149,7 @@ class ControlExtension():
 
     def adjustWidgets(self):
         self.WriteableWidgets = []
+        self.widgets = self.Me.findChildren(type=widgetCOMP)
         for widget in self.widgets:
             # self.print('widget: ' + widget.name )
             if hasattr(widget.par, 'Value0'):
