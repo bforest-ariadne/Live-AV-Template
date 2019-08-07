@@ -1,31 +1,34 @@
 op = op  # pylint:disable=invalid-name,used-before-assignment
 root = root  # pylint:disable=invalid-name,used-before-assignment
 
+
 class PreShowExtension():
 
     def __init__(self, my_op):
         self.Me = my_op
         # test
         self.name = my_op.name
-        self.onStopped = { 'operator': None, 'method': None }
-        self.onStarted = { 'operator': None, 'method': None }
-        self.States = [ 'Starting', 'Started', 'Stopping', 'Stopped' ]
+        self.onStopped = {'operator': None, 'method': None}
+        self.onStarted = {'operator': None, 'method': None}
+        self.States = ['Starting', 'Started', 'Stopping', 'Stopped']
         self.fadeIO = op('../fadeIO')
         # fade in and out progress refs for outputEXT progress
         self.FadeInProg = op('../fadeIO/fadeInProg')
         self.FadeOutProg = op('../fadeIO/fadeOutProg')
-        self.State = self.Me.fetch( 'State' )
+        self.State = self.Me.fetch('State')
 
         self.print('init')
         if self.State == 'Started':
             self.fadeIO.ImmediateIn()
         elif self.State == 'Stopped':
             self.fadeIO.ImmediateOut()
-        
+
         if root.var('Mode') == self.name:
-            if self.State != 'Started': self.Start()
+            if self.State != 'Started':
+                self.Start()
         else:
-            if self.State != 'Stopped': self.Stop()
+            if self.State != 'Stopped':
+                self.Stop()
         return
 
     def Test(self):
@@ -34,10 +37,10 @@ class PreShowExtension():
 
     def Start(self, operator=None, method=None):
         if self.State == 'Stopped':
-            self.State =  'Starting' 
+            self.State = 'Starting'
 
             self.print('starting')
-            self.onStarted = { 'operator': operator, 'method': method }
+            self.onStarted = {'operator': operator, 'method': method}
 
             fadeIO = self.fadeIO
             fadeInSuccess = fadeIO.Fadein(self, 'OnFadeIn')
@@ -48,13 +51,12 @@ class PreShowExtension():
             return False
         return
 
-
     def Stop(self, operator=None, method=None):
         if self.State == 'Started':
-            self.State =  'Stopping' 
+            self.State = 'Stopping'
 
             self.print('stopping')
-            self.onStopped = { 'operator': operator, 'method': method }
+            self.onStopped = {'operator': operator, 'method': method}
             # - fade out scene from black
             fadeIO = self.fadeIO
             fadeOutSuccess = fadeIO.Fadeout(self, 'OnFadeOut')
@@ -72,7 +74,7 @@ class PreShowExtension():
         # - update started state in storage
         self.State = 'Started'
         # - run a 'started' callback
-        self.callback( self.onStarted )
+        self.callback(self.onStarted)
         return
 
     def OnFadeOut(self):
@@ -81,9 +83,9 @@ class PreShowExtension():
         return
 
     def finishStopping(self):
-        self.State =  'Stopped' 
+        self.State = 'Stopped'
         # - run stopped callback
-        self.callback( self.onStopped )
+        self.callback(self.onStopped)
         return
 
     # to replace self.State('val') with self.State = val with find/replace:
@@ -93,39 +95,39 @@ class PreShowExtension():
     @property
     def State(self):
         return self.Me.fetch('State')
-    
+
     @State.setter
     def State(self, val):
         if val in self.States:
-            self.Me.store( 'State', val )
+            self.Me.store('State', val)
             self.Me.par.State.val = val
-        
+
     def OnPulse(self, par):
-        if hasattr( self.Me, par.name ):
-            function = getattr( self.Me, par.name )
-            if callable( function ):
+        if hasattr(self.Me, par.name):
+            function = getattr(self.Me, par.name)
+            if callable(function):
                 function()
 
         return
 
     def OnValueChange(self, par):
-        self.Me.store( par.name, par.eval() )
-        if hasattr( self.Me, par.name ):
-            function = getattr( self.Me, par.name )
-            if callable( function ):
+        self.Me.store(par.name, par.eval())
+        if hasattr(self.Me, par.name):
+            function = getattr(self.Me, par.name)
+            if callable(function):
                 function()
 
         return
 
     def print(self, message):
-        print( self.name + ': ', message )
+        print(self.name + ': ', message)
         return
 
     def callback(self, config):
         if config['operator'] and config['method']:
-            if hasattr( config['operator'], config['method'] ):
+            if hasattr(config['operator'], config['method']):
                 function = getattr(config['operator'], config['method'])
-                if callable( function ):
+                if callable(function):
                     function()
             else:
                 self.print('FADEIO: callback no fire')
