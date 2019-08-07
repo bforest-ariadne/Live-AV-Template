@@ -25,6 +25,9 @@ class CalibrateExtension(PreShowExtension):
         super().Test()
         self.print('test extension Calibreate Class')
         return
+    def Reset(self):
+        op('/Calibrate/stoner/settingsUI/reset/button1').click()
+        return
 
     def onStonerKeyChange(self, dat, cells, prev):
         #  TODO fix glitchyness of key translation
