@@ -34,11 +34,3 @@ class Job(ComClass):
 	def ApplyPars(self, msg):
 		op.Control.ApplyPars( msg )
 		pass
-
-	# def Send_hb(self, msg):
-	# 	op.Heartbeat.Send_hb(msg)
-	# 	pass
-	
-	# def Hb_response(self, msg):
-	# 	op.Heartbeat.Hb_response(msg)
-	# 	pass
