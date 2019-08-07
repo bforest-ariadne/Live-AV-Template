@@ -11,7 +11,7 @@ class ControlExtension():
     def __init__(self, my_op):
         self.Me = my_op
         self.name = my_op.name
-        self.children = self.Me.findChildren(type=containerCOMP, maxDepth=2)
+        self.Children = self.Me.findChildren(type=containerCOMP, maxDepth=2)
         self.widgets = self.Me.findChildren(type=widgetCOMP)
         self.WriteableWidgets = []
         self.Msg = {}
@@ -26,7 +26,7 @@ class ControlExtension():
         return
 
     def updateChildren(self):
-        self.children = self.Me.findChildren(type=containerCOMP, maxDepth=2)
+        self.Children = self.Me.findChildren(type=containerCOMP, maxDepth=2)
         return
 
     def ApplyParVals(self, message, comsParent):
@@ -49,7 +49,7 @@ class ControlExtension():
             targetOp = targetOps[0]
             if targetOp:
                 # update readonly parameters if target is in the Control op
-                readOnly = targetOp in self.children
+                readOnly = targetOp in self.Children
                 parComMod.load_pars(msg, targetOp, readOnly=readOnly)
         return
 
@@ -171,7 +171,7 @@ class ControlExtension():
         return
 
     def handleOpNameMsg(self, msg):
-        for child in self.children:
+        for child in self.Children:
             if child.name.find(msg.get('op_name', None)) != -1:
                 self.Msg = msg
                 readOnly = child.digits is not None
