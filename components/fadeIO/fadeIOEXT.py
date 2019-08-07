@@ -17,9 +17,11 @@ class FadeIOExtension():
             print( 'has pars' )
             fadeInPar.bindExpr = 'parent().par.Fadein'
             fadeInPar.mode = ParMode.BIND
+            self.Me.store( fadeInPar.name, fadeInPar.eval() )
             
             fadeOutPar.bindExpr = 'parent().par.Fadeout'
             fadeOutPar.mode = ParMode.BIND
+            self.Me.store( fadeOutPar.name, fadeOutPar.eval() )
         else:
             fadeInPar.mode = ParMode.CONSTANT
             fadeOutPar.mode = ParMode.CONSTANT

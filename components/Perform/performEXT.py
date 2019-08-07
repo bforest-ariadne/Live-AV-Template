@@ -434,7 +434,7 @@ class PerformExtension():
         return
 
     def sendApplyParVals(self):
-        parDict = parComMod.page_to_dict( self.Me, 'Settings', [])
+        parDict = parComMod.pageToDict( self.Me, 'Settings', [])
         msg = {
             'messagekind'	: "ApplyParVals",
             'target'		: op.Com.Hostname,

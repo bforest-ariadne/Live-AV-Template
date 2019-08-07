@@ -1,6 +1,6 @@
 import json
 
-def page_to_dict(target_op, target_page, p_name, ignore_list):
+def pageToDict(target_op, target_page, p_name, ignore_list):
     ''' 
         A reusable method for capturing parameters on a single page of a COMP
     

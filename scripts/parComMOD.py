@@ -1,7 +1,7 @@
 import json
 
 
-def page_to_dict(target_op, target_page, ignore_list):
+def pageToDict(target_op, target_page, ignore_list):
     ''' 
         A reusable method for capturing parameters on a single page of a COMP
 
@@ -43,7 +43,7 @@ def page_to_dict(target_op, target_page, ignore_list):
     return par_dict
 
 
-def write_dict_to_json(target_file, dict_to_save):
+def writeDictToJson(target_file, dict_to_save):
     ''' 
         A Helper function that writes JSON file to disk
 
@@ -74,7 +74,7 @@ def write_dict_to_json(target_file, dict_to_save):
     json_file.close()
 
 
-def load_pars(par_dict, target_op, readOnly=False, debug=False):
+def applyControlPars(par_dict, target_op, readOnly=False, debug=False):
 
     # safety to ensure we have a preset to use
     # try:

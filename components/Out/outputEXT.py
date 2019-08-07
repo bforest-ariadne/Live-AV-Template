@@ -217,7 +217,7 @@ class OutputExtension():
         return
 
     def SendApplyParVals(self):
-        parDict = parComMod.page_to_dict(self.Me, 'Settings', [])
+        parDict = parComMod.pageToDict(self.Me, 'Settings', [])
 
         msg = {
             'messagekind'	: "ApplyParVals",
