@@ -55,3 +55,7 @@ class CalibrateExtension(PreShowExtension):
             self.sliderChange = True
             self.keyDat[ tdu.digits(channel.name), channel.name[-1:] ] = val
         self.sliderChange = False
+
+    def Showui(self):
+        self.Me.op('widget_keyControl').openViewer()
+        return
