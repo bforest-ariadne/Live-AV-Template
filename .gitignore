@@ -9,6 +9,9 @@
 Backup/
 Live-AV-Template.*.toe
 
+# TD calibration
+components/Calibrate/calibration.tox
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
