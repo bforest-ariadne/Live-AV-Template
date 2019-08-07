@@ -9,22 +9,18 @@ class ControlExtension():
 
     def __init__(self, my_op):
         self.Me = my_op
-        # test
         self.name = my_op.name
-        print('name: ', self.name )
-        self.com = op('/IO/base_com')
         self.children = self.Me.findChildren(type=containerCOMP, maxDepth=2)
-        self.Children = self.children
         self.widgets = self.Me.findChildren(type=widgetCOMP)
-        self.Widgets = self.widgets
         self.WriteableWidgets = []
         self.Msg = {}
         self.readOnlyFontColor = [0.913725, 1, 0, 1]
         self.fontColor = [0.65, 0.65, 0.65, 1]
         self.com = op('/Control/base_com_control')
-        self.adjustWidgets()
-        self.AdjustWidgets = self.adjustWidgets
         self.PageDicts = {}
+
+        self.print('init')
+        self.adjustWidgets()
 
         return
     
@@ -33,7 +29,6 @@ class ControlExtension():
         return
 
     def ApplyParVals(self, message, comsParent):
-        fromOp = message.get('value').get('parDict').get( 'op_name' )
         
         self.updateChildren()
         target = message.get('value').get('target')
@@ -41,7 +36,6 @@ class ControlExtension():
 
         rootOp = self.Me if comsParent.name == 'Control' else root
 
-        # self.print('ApplyParVals - ' + rootOp.name )
         if msg.get( 'op_name', None ):
             targetOps = rootOp.findChildren(name=target)
             if targetOps == []:
@@ -55,10 +49,7 @@ class ControlExtension():
             if targetOp:
                 # update readonly parameters if target is in the Control op
                 readOnly = targetOp in self.children
-                # self.print( 'ApplyParVals - coms: ' + comsParent.name + ' from: ' + fromOp )
-                # self.print( '   readOnly: ' + str(readOnly) )
                 parComMod.load_pars(msg, targetOp, readOnly=readOnly)
-                # self.print('end ApplyParVals')
         return
 
     def ApplyPars(self, message):
@@ -70,9 +61,8 @@ class ControlExtension():
 
         if self.PageDicts.get(target) is None:
             self.PageDicts[target] = {'pageDict': msg }
-            # self.PageDicts[target]['pageDict'] = msg
+
         if self.PageDicts[target].get('pastDict') is None:
-            # self.PageDicts[target] = {'pastDict': msg }
             self.PageDicts[target]['pastDict'] = msg
 
         self.PageDicts[target]['pastDict'] = self.PageDicts[target]['pageDict']
@@ -87,7 +77,6 @@ class ControlExtension():
             for child in children:
                 if child.name != target:
                     targetOp = self.Me.op('ui').copy( self.Me.op('template') )
-                    # targetOp.name = target
                     created = True
                 else:
                     targetOp = child
@@ -96,10 +85,8 @@ class ControlExtension():
             targetOp.name = target
             created = True
         
-        # self.print('targetOp: ' + targetOp)
         TDJ.addParametersFromJSONDict(targetOp, msg, replace=True, setValues=True, destroyOthers=True)
         targetOp.customPages[0].sort(*parOrder)
-        # self.print('ApplyPars - after addParameterJson')
         autoUI = None
         if created:
             autoUI = targetOp.loadTox(root.var('TOUCH') +'/components/autoUI.tox' ) 
@@ -107,10 +94,8 @@ class ControlExtension():
         if created or reInitUi:
             self.print('autoUI pulsed. created: ' + str(created) + ' reInitUi: ' + str(reInitUi) )
             autoUI.par.Generateui.pulse()
-        # self.print('ApplyPars - after generate UI')
-        # targetOp.op('ui').par.reinitnet.pulse()
+
         self.adjustWidgets()
-        # self.print('ApplyPars - end - after adjustWidgets')
         self.updateChildren()
         self.SetParDatActive(True)
 
@@ -129,8 +114,7 @@ class ControlExtension():
         return
 
     def OnChildParChange(self, par):
-        # self.print('child par change')
-        # print( '    par changed:', par.name, par.val )
+
         parDict = parComMod.page_to_dict( par.owner, 'Settings', [] )
         target = parDict['op_name'][:-1]
         msg = {
@@ -151,9 +135,7 @@ class ControlExtension():
         self.WriteableWidgets = []
         self.widgets = self.Me.findChildren(type=widgetCOMP)
         for widget in self.widgets:
-            # self.print('widget: ' + widget.name )
             if hasattr(widget.par, 'Value0'):
-                # print( widget.par.Value0 )
                 if widget.par.Value0.bindMaster.readOnly:
                     self.changeFontColor( widget, self.readOnlyFontColor )
                 else:
@@ -162,11 +144,9 @@ class ControlExtension():
         return
     
     def changeFontColor(self, widget, color):
-        # self.print('readOnly par: ' + widget.name)
         fontColorParNames = ['*fontcolor*', '*fontoffcolor*']
         for fontColorParName in fontColorParNames:
             fontColorPars = widget.pars(fontColorParName)
-            # self.print(fontColorPars)
             if fontColorPars != []:
                 fontColors = ['*fontcolorr', '*fontcolorg', '*fontcolorb', '*fontcolora']
                 for i in range(len(fontColors)):
@@ -188,7 +168,6 @@ class ControlExtension():
             if child.name.find( msg.get( 'op_name', None ) ) != -1:
                 self.Msg = msg
                 readOnly = child.digits is not None
-                # self.print( 'readOnly: ' + str(readOnly))
                 parComMod.load_pars( msg, child, readOnly=readOnly )
 
         return
@@ -198,8 +177,7 @@ class ControlExtension():
             function = getattr( self.Me, par.name )
             if callable( function ):
                 function()
-            # else:
-            #     self.print( 'attr is not callable' )
+
         return
 
     def OnValueChange(self, par):
@@ -208,15 +186,13 @@ class ControlExtension():
             function = getattr( self.Me, par.name )
             if callable( function ):
                 function()
-            # else:
-            #     self.print( 'attr is not callable' )
+
         return
 
     def print(self, message):
         print( self.name + ': ', message )
         return
 
-    # method to call callbacks
     def callback(self, config):
         if config['operator'] and config['method']:
             if hasattr( config['operator'], config['method'] ):
