@@ -13,7 +13,6 @@ class ControlExtension():
         self.name = my_op.name
         self.Children = self.Me.findChildren(type=containerCOMP, maxDepth=2)
         self.widgets = self.Me.findChildren(type=widgetCOMP)
-        self.WriteableWidgets = []
         self.Msg = {}
         self.readOnlyFontColor = [0.913725, 1, 0, 1]
         self.fontColor = [0.65, 0.65, 0.65, 1]
@@ -22,7 +21,6 @@ class ControlExtension():
 
         self.print('init')
         self.adjustWidgets()
-
         return
 
     def updateChildren(self):
@@ -32,25 +30,27 @@ class ControlExtension():
     def ApplyParVals(self, message, comsParent):
 
         self.updateChildren()
+
+        # init method arguments
         target = message.get('value').get('target')
         msg = message.get('value').get('parDict')
-
         rootOp = self.Me if comsParent.name == 'Control' else root
 
-        if msg.get('op_name', None):
-            targetOps = rootOp.findChildren(name=target)
-            if targetOps == []:
-                return
-            try:
-                assert(len(targetOps) <= 1)
-            except AssertionError as error:
-                print(error)
-                self.print('there should be only one potential targetOp')
-            targetOp = targetOps[0]
-            if targetOp:
-                # update readonly parameters if target is in the Control op
-                readOnly = targetOp in self.Children
-                parComMod.load_pars(msg, targetOp, readOnly=readOnly)
+        # find targetOp
+        targetOps = rootOp.findChildren(name=target)
+        if targetOps == []:
+            return
+        try:
+            assert(len(targetOps) <= 1)
+        except AssertionError as error:
+            print(error)
+            self.print('there should be only one potential targetOp')
+        targetOp = targetOps[0]
+        if targetOp:
+            # update readonly parameters if target is in the Control op
+            readOnly = targetOp in self.Children
+            # update targetOp with new par vals
+            parComMod.load_pars(msg, targetOp, readOnly=readOnly)
         return
 
     def ApplyPars(self, message):
@@ -118,18 +118,6 @@ class ControlExtension():
 
         return
 
-    def SetParDatActive(self, state):
-        try:
-            assert(type(state) == bool)
-        except AssertionError as error:
-            print(error)
-            print('state must be type bool')
-
-        parExecDats = self.Me.findChildren(type=parameterexecuteDAT)
-        for dat in parExecDats:
-            dat.par.active = state
-        return
-
     def OnChildParChange(self, par):
 
         parDict = parComMod.page_to_dict(par.owner, 'Settings', [])
@@ -149,7 +137,6 @@ class ControlExtension():
         return
 
     def adjustWidgets(self):
-        self.WriteableWidgets = []
         self.widgets = self.Me.findChildren(type=widgetCOMP)
         for widget in self.widgets:
             if hasattr(widget.par, 'Value0'):
@@ -157,7 +144,6 @@ class ControlExtension():
                     self.changeFontColor(widget, self.readOnlyFontColor)
                 else:
                     self.changeFontColor(widget, self.fontColor)
-                    self.WriteableWidgets.append(widget)
         return
 
     def changeFontColor(self, widget, color):
@@ -196,7 +182,6 @@ class ControlExtension():
             function = getattr(self.Me, par.name)
             if callable(function):
                 function()
-
         return
 
     def OnValueChange(self, par):
@@ -205,7 +190,6 @@ class ControlExtension():
             function = getattr(self.Me, par.name)
             if callable(function):
                 function()
-
         return
 
     def print(self, message):
