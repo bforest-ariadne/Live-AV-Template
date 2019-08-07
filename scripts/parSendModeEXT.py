@@ -9,10 +9,11 @@ parComMod = mod('/scripts/parComMOD')
 class ParSendModeExtension():
     def __init__(self, my_op):
         self.com = op('/IO/base_com')
+        print('parSendModeExtension')
 
         return
 
-    def SendApplyParVals(self):
+    def sendApplyParVals(self):
         parDict = parComMod.pageToDict(self.Me, 'Settings', [])
 
         msg = {
@@ -26,12 +27,12 @@ class ParSendModeExtension():
                             "target": self.name+'1'
             }
         }
-        if self.Me.fetch('Uipars'):
+        # if self.Me.fetch('Uipars'):
             # self.print('send applyParVals')
-            self.com.Send_msg(msg)
+        self.com.Send_msg(msg)
         return
 
-    def SendApplyPars(self):
+    def sendApplyPars(self):
         pageDict = TDJ.pageToJSONDict(self.Me.customPages[0], ['val', 'order'])
         pars = self.Me.customPages[0].pars
         parOrder = []
@@ -50,7 +51,7 @@ class ParSendModeExtension():
                             'parOrder': parOrder,
             }
         }
-        if self.Me.fetch('Ui'):
+        # if self.Me.fetch('Ui'):
             # self.print('SentApplyPars')
-            self.com.Send_msg(msg)
+        self.com.Send_msg(msg)
         return

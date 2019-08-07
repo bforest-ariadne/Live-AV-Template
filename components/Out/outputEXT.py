@@ -215,12 +215,12 @@ class OutputExtension( ParSendModeExtension ):
             function = getattr(self.Me, par.name)
             if callable(function):
                 function()
-        self.SendApplyParVals()
+        self.sendApplyParVals()
         return
 
     def OnParsChange(self):
-        self.SendApplyPars()
-        self.SendApplyParVals()
+        self.sendApplyPars()
+        self.sendApplyParVals()
         return
 
     def print(self, message):

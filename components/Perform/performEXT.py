@@ -6,9 +6,11 @@ root = root  # pylint:disable=invalid-name,used-before-assignment
 TDF = op.TDModules.mod.TDFunctions  # utility functions
 TDJ = op.TDModules.mod.TDJSON
 parComMod = mod('/IO/base_com/parComMOD')
+ParSendModeExtension = mod('parSendModeEXT').ParSendModeExtension
 
 
-class PerformExtension():
+
+class PerformExtension(ParSendModeExtension):
 
     """ A class used to control the final output switchCOMP
 
@@ -66,13 +68,15 @@ class PerformExtension():
     """
 
     def __init__(self, my_op):
+        ParSendModeExtension.__init__(self, my_op)
         self.Me = my_op
         self.name = my_op.name
         self.onStopped = {'operator': None, 'method': None}
         self.onStarted = {'operator': None, 'method': None}
         self.onSceneChange = {'operator': None, 'method': None}
         self.Debug = False
-        self.com = op('/IO/base_com')
+        # self.com = op('/IO/base_com')
+        
         self.States = ['Starting', 'Started', 'Stopping', 'Stopped']
         self.State = self.Me.fetch('State')
         self.CurrentScene = self.Me.fetch('CurrentScene')
@@ -84,7 +88,7 @@ class PerformExtension():
 
         self.print('init')
         #  get list of scenes
-        self.getScenes()
+        self.GetScenes()
         #  default to scene1 if CurrentScene from storage not available
         if self.CurrentScene not in self.scenes:
             self.CurrentScene = self.scenes[0]
@@ -340,7 +344,7 @@ class PerformExtension():
                 scene.outputConnectors[0].disconnect()
         return
 
-    def getScenes(self):
+    def GetScenes(self):
         findScene = op('opfind_scene')
         scenePaths = findScene.cells('scene*', 'path')
         self.scenes = []
@@ -431,45 +435,6 @@ class PerformExtension():
 
     def OnParsChange(self):
         self.sendApplyPars()
-        return
-
-    def sendApplyParVals(self):
-        parDict = parComMod.pageToDict( self.Me, 'Settings', [])
-        msg = {
-            'messagekind'	: "ApplyParVals",
-            'target'		: op.Com.Hostname,
-            'sender'		: op.Com.Hostname,
-            'output'		: None,
-            'parameter'		: None,
-            'value'			: {
-                            "parDict"	: parDict,
-                            "target": 'Perform1'
-            }
-        }
-        self.com.Send_msg(msg)
-        return
-
-    def sendApplyPars(self):
-        pageDict = TDJ.pageToJSONDict(self.Me.customPages[0], ['val', 'order'])
-        pars = self.Me.customPages[0].pars
-        parOrder = []
-        for par in pars:
-            parOrder.append(par.name)
-
-        msg = {
-            'messagekind'	: "ApplyPars",
-            'target'		: op.Com.Hostname,
-            'sender'		: op.Com.Hostname,
-            'output'		: None,
-            'parameter'		: None,
-            'value'			: {
-                            'pageDict': pageDict,
-                            "target": 'Perform1',
-                            'parOrder': parOrder,
-            }
-        }
-        self.print('applyPars message sent')
-        self.com.Send_msg(msg)
         return
 
     def print(self, message):
