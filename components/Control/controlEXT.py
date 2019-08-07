@@ -97,8 +97,12 @@ class ControlExtension():
             targetOp, msg, replace=True, setValues=True, destroyOthers=True)
 
         # sort parameters for correct order
-        targetOp.customPages[0].sort(*parOrder)
-
+        try:
+            targetOp.customPages[0].sort(*parOrder)
+        except:
+            self.print('parameter sorting error')
+        
+        self.print('after except')
         # if just created, load audoUI tox into target
         autoUI = None
         if created:

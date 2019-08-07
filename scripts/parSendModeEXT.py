@@ -13,8 +13,8 @@ class ParSendModeExtension():
 
         return
 
-    def sendApplyParVals(self):
-        parDict = parComMod.pageToDict(self.Me, 'Settings', [])
+    def sendApplyParVals(self, pageName='Settings'):
+        parDict = parComMod.pageToDict(self.Me, pageName, [])
 
         msg = {
             'messagekind'	: "ApplyParVals",
@@ -32,9 +32,9 @@ class ParSendModeExtension():
         self.com.Send_msg(msg)
         return
 
-    def sendApplyPars(self):
-        pageDict = TDJ.pageToJSONDict(self.Me.customPages[0], ['val', 'order'])
-        pars = self.Me.customPages[0].pars
+    def sendApplyPars(self, pageIndex=0):
+        pageDict = TDJ.pageToJSONDict(self.Me.customPages[pageIndex], ['val', 'order'])
+        pars = self.Me.customPages[pageIndex].pars
         parOrder = []
         for par in pars:
             parOrder.append(par.name)

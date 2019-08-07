@@ -7,19 +7,12 @@ ParSendModeExtension = mod('parSendModeEXT').ParSendModeExtension
 class CalibrateExtension(PreShowExtension, ParSendModeExtension):
 
     def __init__(self, my_op):
-        super().__init__(my_op)
-        self.Keys = {
-            '0' : {'u': 0, 'v' : 0},
-            '1' : {'u': 0, 'v' : 0},
-            '2' : {'u': 0, 'v' : 0},
-            '3' : {'u': 0, 'v' : 0}
-        }
+        PreShowExtension.__init__(self, my_op)
+        ParSendModeExtension.__init__(self, my_op)
         self.sliderChange = False
         self.controlIPar = self.Me.op('widget_keyControl/iparLocal')
         self.keyDat = self.Me.op('calibration/keyOffset')
         self.keyChange = False
-
-        # self.xy1keyControl = self.Me.op('widget_keyControl/slider2D_keyControl1')
 
         return
 
@@ -60,4 +53,13 @@ class CalibrateExtension(PreShowExtension, ParSendModeExtension):
 
     def Showui(self):
         self.Me.op('widget_keyControl').openViewer()
+        return
+
+    def OnValueChange(self, par):
+        super().OnValueChange(par)
+        self.sendApplyParVals()
+        return
+
+    def OnParsChange(self):
+        self.sendApplyPars()
         return
