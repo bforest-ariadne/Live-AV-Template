@@ -1,8 +1,10 @@
 op = op  # pylint:disable=invalid-name,used-before-assignment
 root = root  # pylint:disable=invalid-name,used-before-assignment
 PreShowExtension = mod('preShowEXT').PreShowExtension
+ParSendModeExtension = mod('parSendModeEXT').ParSendModeExtension
 
-class CalibrateExtension(PreShowExtension):
+
+class CalibrateExtension(PreShowExtension, ParSendModeExtension):
 
     def __init__(self, my_op):
         super().__init__(my_op)

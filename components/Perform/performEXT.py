@@ -68,7 +68,7 @@ class PerformExtension(ParSendModeExtension):
     """
 
     def __init__(self, my_op):
-        ParSendModeExtension.__init__(self, my_op)
+        
         self.Me = my_op
         self.name = my_op.name
         self.onStopped = {'operator': None, 'method': None}
@@ -76,7 +76,7 @@ class PerformExtension(ParSendModeExtension):
         self.onSceneChange = {'operator': None, 'method': None}
         self.Debug = False
         # self.com = op('/IO/base_com')
-        
+        super().__init__(my_op)
         self.States = ['Starting', 'Started', 'Stopping', 'Stopped']
         self.State = self.Me.fetch('State')
         self.CurrentScene = self.Me.fetch('CurrentScene')

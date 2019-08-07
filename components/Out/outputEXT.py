@@ -70,7 +70,7 @@ class OutputExtension( ParSendModeExtension ):
         self.Me.store('States', self.States)
         self.State = self.Me.fetch('State')
         # self.com = op('/IO/base_com')
-        ParSendModeExtension.__init__(self, my_op)
+        super().__init__(my_op)
         self.ModeNames = []
         self.status('init')
         self.getModeNames()
