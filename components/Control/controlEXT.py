@@ -2,8 +2,8 @@ import json
 import socket
 op = op  # pylint:disable=invalid-name,used-before-assignment
 root = root  # pylint:disable=invalid-name,used-before-assignment
-# parComMod = mod('/scripts/parComMOD')
-import parComMod
+# parComMOD = mod('/scripts/parComMOD')
+import parComMOD
 TDJ = op.TDModules.mod.TDJSON
 
 
@@ -51,7 +51,7 @@ class ControlExtension():
             # update readonly parameters if target is in the Control op
             readOnly = targetOp in self.Children
             # update targetOp with new par vals
-            parComMod.applyControlPars(msg, targetOp, readOnly=readOnly)
+            parComMOD.applyControlPars(msg, targetOp, readOnly=readOnly)
         return
 
     def ApplyPars(self, message):
@@ -121,7 +121,7 @@ class ControlExtension():
 
     def OnChildParChange(self, par):
 
-        parDict = parComMod.pageToDict(par.owner, 'Settings', [])
+        parDict = parComMOD.pageToDict(par.owner, 'Settings', [])
         target = parDict['op_name'][:-1]
         msg = {
             'messagekind'	: "ApplyParVals",
@@ -174,7 +174,7 @@ class ControlExtension():
             if child.name.find(msg.get('op_name', None)) != -1:
                 self.Msg = msg
                 readOnly = child.digits is not None
-                parComMod.applyControlPars(msg, child, readOnly=readOnly)
+                parComMOD.applyControlPars(msg, child, readOnly=readOnly)
 
         return
 
