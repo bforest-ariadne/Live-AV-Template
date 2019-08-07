@@ -5,16 +5,11 @@ class SceneExtension():
 
     def __init__(self, my_op):
         self.Me = my_op
-        # test
-        
-        self.onStop = { 'operator': None, 'method': None }
-        self.onStart = { 'operator': None, 'method': None }
+        self.name = my_op.name
         self.Me.store( 'Output', op('../out1') )
         self.springs = []
-        self.GetSprings()
-        self.name = my_op.name
+        self.getSprings()
         self.print('init')
-        # self.Page = self.Me.customPages[0]
         self.States = [ 'Starting', 'Started', 'Stopping', 'Stopped' ]
         self.State = self.Me.fetch( 'State' )
         self.Me.par.State.menuLabels = self.States
@@ -23,6 +18,8 @@ class SceneExtension():
         self.onStarted = { 'operator': None, 'method': None }
         self.fadeIO = op('../fadeIO')
 
+        self.print('init')
+        # init scene index
         self.Index = -1
         self.perform = op('/Perform')
         if len( self.perform.fetch('Scenes') ) > 0:
@@ -32,10 +29,11 @@ class SceneExtension():
                 self.Index = -1
         self.Me.par.Index.readOnly = True
 
+        # get select ops
         self.selInputs = []
-        self.GetSelInputs()
-        self.print('init')
+        self.getSelInputs()
 
+        # init scene start based on is blank and current mode
         if self.name == 'blank' and root.var('Mode') != 'Perform':
             self.fadeIO.ImmediateIn()
             self.OnFadeIn()
@@ -50,20 +48,15 @@ class SceneExtension():
     def Test(self):
         self.print('test scene extension')
         return
+
     def Start(self, operator=None, method=None, inTime=None, outTime=None):
         # method that starts the scene
         if self.State == 'Stopped':
             self.State = 'Starting' 
-        # if not self.Me.fetch( 'Starting' ) and not self.Me.fetch( 'Started' ):
-        #     self.Me.store( 'Stopped', False )
-        #     self.Me.store( 'Starting', True )
             self.print('starting')
             self.onStarted = { 'operator': operator, 'method': method }
             # - reset physics
             self.enableNodes()
-            # - reinit the scene in any other ways
-            # - update inited state in storage
-            # - fade in scene from black
             fadeIO = self.fadeIO
             fadeInSuccess = fadeIO.Fadein(self, 'OnFadeIn', self.Me.par.Fadein)
             if fadeInSuccess == False:
@@ -79,7 +72,6 @@ class SceneExtension():
 
             self.print('stopping')
             self.onStopped = { 'operator': operator, 'method': method }
-            # method that starts the scene
             # - fade out scene from black
             fadeIO = self.fadeIO
             fadeOutSuccess = fadeIO.Fadeout(self, 'OnFadeOut', self.Me.par.Fadeout)
@@ -95,9 +87,6 @@ class SceneExtension():
     def OnFadeIn(self):
         self.print('onfadein')
         # - update started state in storage
-        # self.Me.store( 'Started', True )
-        # self.Me.store( 'Starting', False )
-        # self.Me.store( 'Stopped', False )
         self.State = 'Started'
         # - run a 'started' callback
         self.callback( self.onStarted )
@@ -112,13 +101,10 @@ class SceneExtension():
         # - stop any other processing
         self.disableNodes()
         # - update states in storage
-        # self.Me.store( 'Stopping', False )
-        # self.Me.store( 'Stopped', True )
         self.State = 'Stopped' 
         # - run stopped callback
         self.callback( self.onStopped )
         return
-
 
     def disableNodes(self):
         op('../post').par.Bypass = True
@@ -136,7 +122,7 @@ class SceneExtension():
             node.bypass = False
         return
 
-    def GetSprings(self):
+    def getSprings(self):
         findSpring = op('opfind_spring')
         springPaths = findSpring.cells('spring*', 'path')
         self.springs = []
@@ -144,7 +130,7 @@ class SceneExtension():
             self.springs.append( op( paths ))
         return
     
-    def GetSelInputs(self):
+    def getSelInputs(self):
         findSelInput = op('opfind_selInput')
         selInputPaths = findSelInput.cells('select*', 'path')
         self.selInputs = []
@@ -156,14 +142,6 @@ class SceneExtension():
         self.Me.par.Fadein.readOnly = self.Me.par.Lockfades.val
         self.Me.par.Fadeout.readOnly = self.Me.par.Lockfades.val
         return
-
-    # def State(self, value = None):
-    #     if value is None:
-    #         return self.Me.fetch('State')
-    #     else:
-    #         self.Me.store( 'State', value )
-    #         self.Me.par.State.val = value
-    #     return
 
     @property
     def State(self):
@@ -202,7 +180,6 @@ class SceneExtension():
         print( self.name + ': ', message )
         return
 
-    # method to call callbacks
     def callback(self, config):
         if config['operator'] and config['method']:
             if hasattr( config['operator'], config['method'] ):
