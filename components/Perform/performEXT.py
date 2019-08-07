@@ -79,6 +79,8 @@ class PerformExtension():
         self.BlankScene = self.Me.op('blank')
         self.input = op('../input')
         self.scenes = []
+        self.FadeInProg = op('../fadeInProg')
+        self.FadeOutProg = op('../fadeOutProg')
 
         self.print('init')
         #  get list of scenes
