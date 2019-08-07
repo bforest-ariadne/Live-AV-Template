@@ -18,7 +18,7 @@ class ControlExtension():
         self.readOnlyFontColor = [0.913725, 1, 0, 1]
         self.fontColor = [0.65, 0.65, 0.65, 1]
         self.com = op('/Control/base_com_control')
-        self.PageDicts = {}
+        self.pageDicts = {}
 
         self.print('init')
         self.adjustWidgets()
@@ -55,26 +55,30 @@ class ControlExtension():
 
     def ApplyPars(self, message):
 
-        self.SetParDatActive(False)
+        # init method vars
         target = message.get('value').get('target')
         msg = message.get('value').get('pageDict')
         parOrder = message.get('value').get('parOrder')
 
-        if self.PageDicts.get(target) is None:
-            self.PageDicts[target] = {'pageDict': msg}
+        # init pageDicts if needed
+        if self.pageDicts.get(target) is None:
+            self.pageDicts[target] = {'pageDict': msg}
 
-        if self.PageDicts[target].get('pastDict') is None:
-            self.PageDicts[target]['pastDict'] = msg
+        if self.pageDicts[target].get('pastDict') is None:
+            self.pageDicts[target]['pastDict'] = msg
 
-        self.PageDicts[target]['pastDict'] = self.PageDicts[target]['pageDict']
-        self.PageDicts[target]['pageDict'] = msg
+        self.pageDicts[target]['pastDict'] = self.pageDicts[target]['pageDict']
+        self.pageDicts[target]['pageDict'] = msg
 
-        reInitUi = len(self.PageDicts[target]['pastDict']) != len(
-            self.PageDicts[target]['pageDict'])
+        # check past with current parameter numbers
+        # to see if UI needs update
+        uiNeedsUpdate = len(self.pageDicts[target]['pastDict']) != len(
+            self.pageDicts[target]['pageDict'])
 
         children = self.Me.op('ui').findChildren(name=target, maxDepth=1)
         targetOp = None
         created = False
+        # if the target does not exist, create it
         if children != []:
             for child in children:
                 if child.name != target:
@@ -87,22 +91,30 @@ class ControlExtension():
             targetOp.name = target
             created = True
 
+        # update target op with new pars
         TDJ.addParametersFromJSONDict(
             targetOp, msg, replace=True, setValues=True, destroyOthers=True)
+
+        # sort parameters for correct order
         targetOp.customPages[0].sort(*parOrder)
+
+        # if just created, load audoUI tox into target
         autoUI = None
         if created:
             autoUI = targetOp.loadTox(
                 root.var('TOUCH') + '/components/autoUI.tox')
         autoUI = targetOp.op('autoUI')
-        if created or reInitUi:
+
+        # update UI if different number of pars
+        # or if target was just created
+        if created or uiNeedsUpdate:
             self.print('autoUI pulsed. created: ' +
-                       str(created) + ' reInitUi: ' + str(reInitUi))
+                       str(created) + ' uiNeedsUpdate: ' + str(uiNeedsUpdate))
             autoUI.par.Generateui.pulse()
 
+        # update par colors for readOnly and update children
         self.adjustWidgets()
         self.updateChildren()
-        self.SetParDatActive(True)
 
         return
 
