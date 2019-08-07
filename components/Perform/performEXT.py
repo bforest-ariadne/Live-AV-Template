@@ -424,10 +424,14 @@ class PerformExtension():
             function = getattr(self.Me, par.name)
             if callable(function):
                 function()
-        self.SendApplyParVals()
+        self.sendApplyParVals()
         return
 
-    def SendApplyParVals(self):
+    def OnParsChange(self):
+        self.sendApplyPars()
+        return
+
+    def sendApplyParVals(self):
         parDict = parComMod.page_to_dict(par.owner, 'Settings', [])
         msg = {
             'messagekind'	: "ApplyParVals",
@@ -443,7 +447,7 @@ class PerformExtension():
         self.com.Send_msg(msg)
         return
 
-    def OnParsChange(self):
+    def sendApplyPars(self):
         pageDict = TDJ.pageToJSONDict(self.Me.customPages[0], ['val', 'order'])
         pars = self.Me.customPages[0].pars
         parOrder = []
