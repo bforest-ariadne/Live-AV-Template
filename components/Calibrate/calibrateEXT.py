@@ -15,6 +15,7 @@ class CalibrateExtension(PreShowExtension):
         self.sliderChange = False
         self.controlIPar = self.Me.op('widget_keyControl/iparLocal')
         self.keyDat = self.Me.op('calibration/keyOffset')
+        self.keyChange = False
 
         # self.xy1keyControl = self.Me.op('widget_keyControl/slider2D_keyControl1')
 
@@ -29,10 +30,10 @@ class CalibrateExtension(PreShowExtension):
         #  TODO fix glitchyness of key translation
         #  this is due to the two bound parameters
         if not self.sliderChange:
+            self.keyChange = True
             for i in range(4):
                 parNameU = 'Key{}1'.format(i)
                 parNameV = 'Key{}2'.format(i)
-                self.print(parNameU)
                 cellu = dat[ i + 1, 'u']
                 cellv = dat[ i + 1, 'v']
                 if cellu.val != '': 
@@ -43,10 +44,11 @@ class CalibrateExtension(PreShowExtension):
                     self.controlIPar.pars(parNameV)[0].val = cellv
                 else:
                     self.controlIPar.pars(parNameV)[0].val = 0.0
+        self.keyChange = False
         return
 
     def OnsliderChange(self, channel, val ):
-        self.sliderChange = True
-        # self.print('slider change')
-        self.keyDat[ tdu.digits(channel.name), channel.name[-1:] ] = val
+        if not self.keyChange:
+            self.sliderChange = True
+            self.keyDat[ tdu.digits(channel.name), channel.name[-1:] ] = val
         self.sliderChange = False
