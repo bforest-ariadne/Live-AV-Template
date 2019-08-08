@@ -10,7 +10,7 @@ The top level consists of several “Modes” (perform, pre-show, post-show,etc)
 The system control is all based a python api via extensions which can be controlled via node custom parameters or the Control UI. The Control UI can run in a separate TD instance on the same machine or any machine on the local network. 
 
 ### Out
-  Controls which Mode is displayed. Nodes on the same network level that have “MODE” tags are available for selection. 
+  Controls which Mode is displayed. Nodes on the same network level that have “MODE” tags are available for selection. All mode changes fade in and out from black. 
 
 ### Perform - MODE
-
+When selected, controls which are shown. 
