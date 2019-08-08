@@ -53,7 +53,10 @@ class ControlExtension():
             # update targetOp with new par vals
             # self.print('applyControlPars')
             # print('    ', msg)
-            parComMOD.applyControlPars(msg, targetOp, readOnly=readOnly, debug=False)
+            if hasattr(targetOp, 'ParLock') and targetOp.ParLock == False:
+                targetOp.ParLock = True
+                parComMOD.applyControlPars(msg, targetOp, readOnly=readOnly, debug=False)
+                targetOp.ParLock = False
         return
 
     def ApplyPars(self, message):

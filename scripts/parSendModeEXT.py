@@ -11,48 +11,55 @@ class ParSendModeExtension():
     def __init__(self, my_op):
         self.com = op('/IO/base_com')
         print('parSendModeExtension')
+        self.ParLock = False
 
         return
 
     def sendApplyParVals(self, pageName='Settings'):
-        parDict = parComMOD.pageToDict(self.Me, pageName, [])
+        if not self.ParLock: 
+            self.ParLock = True
+            parDict = parComMOD.pageToDict(self.Me, pageName, [])
 
-        msg = {
-            'messagekind'	: "ApplyParVals",
-            'target'		: op.Com.Hostname,
-            'sender'		: op.Com.Hostname,
-            'output'		: None,
-            'parameter'		: None,
-            'value'			: {
-                            "parDict"	: parDict,
-                            "target": self.name+'1'
+            msg = {
+                'messagekind'	: "ApplyParVals",
+                'target'		: op.Com.Hostname,
+                'sender'		: op.Com.Hostname,
+                'output'		: None,
+                'parameter'		: None,
+                'value'			: {
+                                "parDict"	: parDict,
+                                "target": self.name+'1'
+                }
             }
-        }
-        # if self.Me.fetch('Uipars'):
-            # self.print('send applyParVals')
-        self.com.Send_msg(msg)
+            # if self.Me.fetch('Uipars'):
+                # self.print('send applyParVals')
+            self.com.Send_msg(msg)
+            self.ParLock = False
         return
 
     def sendApplyPars(self, pageIndex=0):
-        pageDict = TDJ.pageToJSONDict(self.Me.customPages[pageIndex], ['val', 'order'])
-        pars = self.Me.customPages[pageIndex].pars
-        parOrder = []
-        for par in pars:
-            parOrder.append(par.tupletName)
+        if not self.ParLock:
+            self.ParLock = True
+            pageDict = TDJ.pageToJSONDict(self.Me.customPages[pageIndex], ['val', 'order'])
+            pars = self.Me.customPages[pageIndex].pars
+            parOrder = []
+            for par in pars:
+                parOrder.append(par.tupletName)
 
-        msg = {
-            'messagekind'	: "ApplyPars",
-            'target'		: op.Com.Hostname,
-            'sender'		: op.Com.Hostname,
-            'output'		: None,
-            'parameter'		: None,
-            'value'			: {
-                            'pageDict': pageDict,
-                            "target": self.name+'1',
-                            'parOrder': parOrder,
+            msg = {
+                'messagekind'	: "ApplyPars",
+                'target'		: op.Com.Hostname,
+                'sender'		: op.Com.Hostname,
+                'output'		: None,
+                'parameter'		: None,
+                'value'			: {
+                                'pageDict': pageDict,
+                                "target": self.name+'1',
+                                'parOrder': parOrder,
+                }
             }
-        }
-        # if self.Me.fetch('Ui'):
-            # self.print('SentApplyPars')
-        self.com.Send_msg(msg)
+            # if self.Me.fetch('Ui'):
+                # self.print('SentApplyPars')
+            self.com.Send_msg(msg)
+            self.ParLock = False
         return
