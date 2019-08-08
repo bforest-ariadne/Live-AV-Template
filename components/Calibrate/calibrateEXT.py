@@ -39,11 +39,11 @@ class CalibrateExtension(PreShowExtension, ParSendModeExtension):
                 # print(self.name, 'index', i, 'cellv.val: ', str(cellv.val), type(cellv.val) )
 
                 if cellu.val != '': 
-                    self.controlIPar.pars(parNameU)[0].val = float(cellu)
+                    self.controlIPar.pars(parNameU)[0].val = int(cellu*1000)
                 else:
                     self.controlIPar.pars(parNameU)[0].val = 0.0
                 if cellv.val != '':
-                    self.controlIPar.pars(parNameV)[0].val = float(cellv)
+                    self.controlIPar.pars(parNameV)[0].val = int(cellv*1000)
                 else:
                     self.controlIPar.pars(parNameV)[0].val = 0.0
         self.keyChange = False
@@ -54,7 +54,7 @@ class CalibrateExtension(PreShowExtension, ParSendModeExtension):
             self.sliderChange = True
             # self.print('OnSliderChange')
 
-            self.keyDat[ tdu.digits(channel.name), channel.name[-1:] ] = val
+            self.keyDat[ tdu.digits(channel.name), channel.name[-1:] ] = val/1000
         self.sliderChange = False
 
     def Showui(self):
