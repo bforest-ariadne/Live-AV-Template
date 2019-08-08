@@ -1,4 +1,5 @@
 import json
+import math
 
 
 def pageToDict(target_op, target_page, ignore_list):
@@ -92,7 +93,7 @@ def applyControlPars(par_dict, target_op, readOnly=False, debug=False):
                 targetPar = target_op.pars(each_par)
                 if targetPar != []:
                     if not targetPar[0].readOnly or readOnly:
-                        if targetPar[0].val != each_val:
+                        if targetPar[0].val != each_val or (type(targetPar[0]) == float and not math.isclose(targetPar[0].val, each_val, abs_tol=0.01)):
                             if debug:
                                 print('changed par: ', each_par, each_val, 'source:',
                                       par_dict['op_name'], 'target:', target_op.name, targetPar[0].val)

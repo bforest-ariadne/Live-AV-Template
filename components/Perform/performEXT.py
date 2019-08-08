@@ -5,7 +5,7 @@ root = root  # pylint:disable=invalid-name,used-before-assignment
 
 TDF = op.TDModules.mod.TDFunctions  # utility functions
 TDJ = op.TDModules.mod.TDJSON
-parComMod = mod('/IO/base_com/parComMOD')
+# parComMOD = mod('/IO/base_com/parComMOD')
 ParSendModeExtension = mod('parSendModeEXT').ParSendModeExtension
 
 

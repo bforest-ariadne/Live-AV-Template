@@ -51,7 +51,9 @@ class ControlExtension():
             # update readonly parameters if target is in the Control op
             readOnly = targetOp in self.Children
             # update targetOp with new par vals
-            parComMOD.applyControlPars(msg, targetOp, readOnly=readOnly)
+            # self.print('applyControlPars')
+            # print('    ', msg)
+            parComMOD.applyControlPars(msg, targetOp, readOnly=readOnly, debug=False)
         return
 
     def ApplyPars(self, message):

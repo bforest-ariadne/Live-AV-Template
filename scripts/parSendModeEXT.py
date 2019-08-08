@@ -3,7 +3,8 @@ root = root  # pylint:disable=invalid-name,used-before-assignment
 
 TDF = op.TDModules.mod.TDFunctions  # utility functions
 TDJ = op.TDModules.mod.TDJSON
-parComMod = mod('/scripts/parComMOD')
+# parComMOD = mod('/scripts/parComMOD')
+import parComMOD
 
 
 class ParSendModeExtension():
@@ -14,7 +15,7 @@ class ParSendModeExtension():
         return
 
     def sendApplyParVals(self, pageName='Settings'):
-        parDict = parComMod.pageToDict(self.Me, pageName, [])
+        parDict = parComMOD.pageToDict(self.Me, pageName, [])
 
         msg = {
             'messagekind'	: "ApplyParVals",

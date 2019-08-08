@@ -3,8 +3,8 @@ Matthew Ragan | matthewragan.com
 '''
 import socket
 import json
-parComMod = mod('/IO/base_com/parComMOD')
-
+# parComMOD = mod('/IO/base_com/parComMOD')
+import parComMOD
 
 class Com:
     '''
