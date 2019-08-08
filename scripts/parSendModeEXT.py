@@ -37,7 +37,7 @@ class ParSendModeExtension():
         pars = self.Me.customPages[pageIndex].pars
         parOrder = []
         for par in pars:
-            parOrder.append(par.name)
+            parOrder.append(par.tupletName)
 
         msg = {
             'messagekind'	: "ApplyPars",

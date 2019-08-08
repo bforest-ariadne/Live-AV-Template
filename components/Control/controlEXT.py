@@ -101,8 +101,8 @@ class ControlExtension():
             targetOp.customPages[0].sort(*parOrder)
         except:
             self.print('parameter sorting error')
+            print('    ', parOrder)
         
-        self.print('after except')
         # if just created, load audoUI tox into target
         autoUI = None
         if created:

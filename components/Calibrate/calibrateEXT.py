@@ -27,19 +27,23 @@ class CalibrateExtension(PreShowExtension, ParSendModeExtension):
     def onStonerKeyChange(self, dat, cells, prev):
         #  TODO fix glitchyness of key translation
         #  this is due to the two bound parameters
-        if not self.sliderChange:
+        if not self.sliderChange and not self.keyChange:
             self.keyChange = True
+            # self.print('onStonerKeyChange')
+
             for i in range(4):
                 parNameU = 'Key{}1'.format(i)
                 parNameV = 'Key{}2'.format(i)
                 cellu = dat[ i + 1, 'u']
                 cellv = dat[ i + 1, 'v']
+                # print(self.name, 'index', i, 'cellv.val: ', str(cellv.val), type(cellv.val) )
+
                 if cellu.val != '': 
-                    self.controlIPar.pars(parNameU)[0].val = cellu
+                    self.controlIPar.pars(parNameU)[0].val = float(cellu)
                 else:
                     self.controlIPar.pars(parNameU)[0].val = 0.0
-                if cellu.val != '':
-                    self.controlIPar.pars(parNameV)[0].val = cellv
+                if cellv.val != '':
+                    self.controlIPar.pars(parNameV)[0].val = float(cellv)
                 else:
                     self.controlIPar.pars(parNameV)[0].val = 0.0
         self.keyChange = False
@@ -48,6 +52,8 @@ class CalibrateExtension(PreShowExtension, ParSendModeExtension):
     def OnsliderChange(self, channel, val ):
         if not self.keyChange:
             self.sliderChange = True
+            # self.print('OnSliderChange')
+
             self.keyDat[ tdu.digits(channel.name), channel.name[-1:] ] = val
         self.sliderChange = False
 
