@@ -20,7 +20,9 @@ class ControlExtension():
         self.com = op('/Control/base_com_control')
         self.pageDicts = {}
 
+
         self.print('init')
+        self.updateChildren()
         self.adjustWidgets()
         return
 
@@ -149,7 +151,7 @@ class ControlExtension():
     def adjustWidgets(self):
         self.widgets = self.Me.findChildren(type=widgetCOMP)
         for widget in self.widgets:
-            if hasattr(widget.par, 'Value0'):
+            if hasattr(widget.par, 'Value0') and widget.par.Value0.bindMaster is not None:
                 if widget.par.Value0.bindMaster.readOnly:
                     self.changeFontColor(widget, self.readOnlyFontColor)
                 else:
