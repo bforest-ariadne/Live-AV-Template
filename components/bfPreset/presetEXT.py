@@ -10,6 +10,7 @@ class PresetEXT():
         self.parent = self.Me.parent()
         self.SceneName = self.parent.name
         self.Me.par.Scenename = self.SceneName
+        self.task = 'Empty'
 
         self.print('init')
         self.Dev()
@@ -29,23 +30,54 @@ class PresetEXT():
         return
 
     def Checkpardifs(self):
+        self.task = 'FinishCheckParDifs'
+        self.Me.op('datexec_allScene').par.active = True
         self.Me.op('parameter_allScene').bypass = False
+
+        return
+
+    def FinishCheckParDifs(self):
+        self.print('FinishCheckParDifs')
+        self.task = 'Empty'
 
         self.Me.op('script_findDif').par.Compare.pulse()
-
-        self.Me.op('parameter_allScene').bypass = True
+        
         return
 
-    def SetInitialState(self):
-        self.initialState = self.Me.op('state0')
-        self.currentState = self.Me.op('currentState')
-
+    def Setinitialstate(self):
+        self.task = 'FinishSetInitialState'
+        self.Me.op('datexec_allScene').par.active = True
         self.Me.op('parameter_allScene').bypass = False
+
+        return
+    
+    def OnAllSceneParsChange(self):
+        self.Me.op('allScenePars').clear()
+        self.Me.op('allScenePars').copy( self.Me.op('parameter_allScene') )
+        self.Me.op('parameter_allScene').bypass = True
+        self.Me.op('datexec_allScene').par.active = False
+
+        self.callback({'operator': self, 'method': self.task})
+
+        return
+
+    def Empty(self):
+        self.print('empth task')
+
+        return
+
+    def FinishSetInitialState(self):
+        self.print('FinishSetInitialState')
+        self.task = 'Empty'
+        
+        self.initialState = self.Me.op('state0')
+        self.currentState = self.Me.op('currentParState')
+
+        
         self.initialState.clear()
         self.initialState.copy(self.currentState)
-
-        self.Me.op('parameter_allScene').bypass = True
         return
+
 
     def Dev(self):
         if self.Me.fetch('Dev'):
