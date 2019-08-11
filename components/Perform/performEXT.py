@@ -366,7 +366,7 @@ class PerformExtension(ParSendModeExtension):
     @CurrentScene.setter
     def CurrentScene(self, val):
         self.Me.store('CurrentScene', val)
-        self.Me.par.Currentsceneindex.val = val.Index
+        # self.Me.par.Currentsceneindex.val = val.Index
 
     @property
     def State(self):

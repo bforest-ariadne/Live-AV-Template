@@ -28,13 +28,32 @@ class PresetEXT():
             self.Midi = children[0]
         return
 
+    def Checkpardifs(self):
+        self.Me.op('parameter_allScene').bypass = False
+
+        self.Me.op('script_findDif').par.Compare.pulse()
+
+        self.Me.op('parameter_allScene').bypass = True
+        return
+
+    def SetInitialState(self):
+        self.initialState = self.Me.op('state0')
+        self.currentState = self.Me.op('currentState')
+
+        self.Me.op('parameter_allScene').bypass = False
+        self.initialState.clear()
+        self.initialState.copy(self.currentState)
+
+        self.Me.op('parameter_allScene').bypass = True
+        return
+
     def Dev(self):
         if self.Me.fetch('Dev'):
             self.print('dev mode on')
             self.CreateMidiConstant = self.createMidiConstant
         else:
             self.print('dev mode off')
-        
+        return
 
     def Test(self):
         self.print('test extension')

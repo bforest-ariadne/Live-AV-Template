@@ -38,7 +38,7 @@ class SceneExtension():
         if self.name == 'blank' and root.var('Mode') != 'Perform':
             self.fadeIO.ImmediateIn()
             self.OnFadeIn()
-        elif root.var('Mode') == 'Perform' and self.perform.CurrentScene == self.Me:
+        elif root.var('Mode') == 'Perform' and self.perform.fetch('CurrentScene') == self.Me:
             self.fadeIO.ImmediateIn()
             self.OnFadeIn()
         else:
