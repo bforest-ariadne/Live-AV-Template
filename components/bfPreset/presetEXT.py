@@ -11,23 +11,32 @@ class PresetEXT():
         self.SceneName = self.parent.name
         self.Me.par.Scenename = self.SceneName
         self.task = 'Empty'
+        self.parDifOp = self.Me.op('parDif')
+        self.presetDict = {}
 
         self.print('init')
         self.Dev()
+        self.createMidiConstant()
         return
 
     def createMidiConstant(self):
+        self.print('createMidiConstant')
         children = self.parent.findChildren(name='midi', type=constantCHOP)
         if children == []:
             print('create midi')
             self.Midi = self.parent.create(constantCHOP, 'midi')
-            self.Midi.nodeX = self.Me.nodeX
-            self.Midi.nodeY = self.Me.nodeY - self.Me.nodeHeight - 20
+            # self.Midi.nodeX = self.Me.nodeX
+            # self.Midi.nodeY = self.Me.nodeY - self.Me.nodeHeight - 20
+            self.placeNodeUnder(self.Me, self.Midi)
             self.parent.par.iopshortcut2 = 'midi'
             self.parent.par.iop2 = self.Midi.path
         elif len(children) == 1:
             self.Midi = children[0]
         return
+
+    def placeNodeUnder(self, refOp, targetOp):
+        targetOp.nodeX = refOp.nodeX
+        targetOp.nodeY = refOp.nodeY - refOp.nodeHeight - 20
 
     def Checkpardifs(self):
         self.task = 'FinishCheckParDifs'
@@ -39,7 +48,6 @@ class PresetEXT():
     def FinishCheckParDifs(self):
         self.print('FinishCheckParDifs')
         self.task = 'Empty'
-
         self.Me.op('script_findDif').par.Compare.pulse()
         
         return
@@ -58,12 +66,52 @@ class PresetEXT():
         self.Me.op('datexec_allScene').par.active = False
 
         self.callback({'operator': self, 'method': self.task})
-
         return
+
+    
+    def GenerateControls(self, index=0):
+
+        self.presetDict[str(index)] = {}
+
+        nameIndex = self.parDifOp.findCells('name')[0].col
+        evalIndex = self.parDifOp.findCells('eval')[0].col
+        preEvalIndex = self.parDifOp.findCells('prevEval')[0].col
+        defaultIndex = self.parDifOp.findCells('default')[0].col
+        
+        for i, row in enumerate(self.parDifOp.rows()):
+
+            if i == 0:
+                continue
+            targetName = row[nameIndex].val
+            targetPar = targetName.split(':')[1]
+            targetOpPath = targetName.split(':')[0]
+            targetOp = op(targetOpPath)
+            rangeMax = row[evalIndex].val
+            rangeMin = row[preEvalIndex] if row[preEvalIndex].val != '' else row[defaultIndex]
+
+            # print(targetPar, targetOp)
+            self.presetDict[str(index)][targetName] = {
+                'par': targetPar,
+                'op': targetOp,
+                'rangeMax': rangeMax,
+                'rangeMin': rangeMin
+            }
+            targetDict = self.presetDict[targetName]
+
+            midiSelect = targetOp.parent().loadTox( root.var('TOUCH') + '/components/midiSelect.tox')
+            midiSelect.par.Index = index
+            midiSelect.par.Torange1 = rangeMin
+            midiSelect.par.Torange2 = rangeMax
+            
+            
+            targetDict['midiSelect'] = midiSelect
+
+        
+        return
+
 
     def Empty(self):
         self.print('empth task')
-
         return
 
     def FinishSetInitialState(self):
