@@ -19,8 +19,12 @@ def onKey(dat, key, character, alt, lAlt, rAlt, ctrl, lCtrl, rCtrl, shift, lShif
 # shortcutName is the name of the shortcut
 
 def onShortcut(dat, shortcutName, time):
+	# print('name', shortcutName)
 	if shortcutName == 'ctrl.shift.c':
 		# toggle cook_bar Active
 		op('/scripts/cook_bar').par.Active = not op('/scripts/cook_bar').par.Active
+	elif shortcutName == 'ctrl.shift.e':
+		print('collapse shortcut')
+		ui.panes.current.owner.collapseSelected()
 	return
 	
