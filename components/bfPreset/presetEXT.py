@@ -100,11 +100,13 @@ class PresetEXT():
                 'par': targetPar,
                 'op': targetOp,
                 'rangeMax': rangeMax,
-                'rangeMin': rangeMin
+                'rangeMin': rangeMin,
+                'parDictIndex': i
             }
             targetDict = self.presetDict[str(index)][targetName]
 
             midiSelect = targetOp.parent().loadTox( root.var('TOUCH') + '/components/midiSelect.tox')
+            midiSelect.name = 'midiSelect{}_{}'.format(index, i)
             targetDict['midiSelect'] = midiSelect
             self.placeNodeUnder( targetOp, midiSelect )
             midiSelect.par.Index = index
@@ -117,9 +119,29 @@ class PresetEXT():
             
             # turn export mode on target par
             targetOp.pars(targetPar)[0].mode = ParMode.EXPORT
-            targetOp.tags.add( 'preset{}'.format(index) )
-
             
+            tagName =  'preset{}'.format(index)
+            midiSelectIndex = -1
+            midiSelectParent = None
+            if tagName in targetOp.tags:
+                #  itterate through our preset index dict
+                for k, v in self.presetDict[str(index)].items():
+                    # if not our own targetName
+                    if k != targetName:
+                        #  itterate through each targetName dict to find the highest index
+                        for tKey, tValue in  self.presetDict[str(index)][k].items():
+                            if tKey == 'parDictIndex':
+                                if tValue > midiSelectIndex:
+                                    midiSelectIndex = tValue
+                        for tKey, tValue in  self.presetDict[str(index)][k].items():
+                            if tKey == 'parDictIndex':
+                                if tValue == midiSelectIndex:
+                                    midiSelectParent = self.presetDict[str(index)][k]['midiSelect']
+
+                if midiSelectParent is not None:
+                    self.placeNodeUnder( midiSelectParent, midiSelect )
+            else:
+                targetOp.tags.add( 'preset{}'.format(index) )
         return
 
     def Removepreset(self, index=0):
@@ -129,7 +151,10 @@ class PresetEXT():
                 if tKey == 'midiSelect':
                     tValue.destroy()
                 if tKey == 'op':
-                    tValue.tag.remove('preset{}'.format(index))
+                    if 'preset{}'.format(index) in tValue.tags:
+                        tValue.tags.remove('preset{}'.format(index))
+        
+        self.presetDict[str(index)] = {}
 
         return
 
