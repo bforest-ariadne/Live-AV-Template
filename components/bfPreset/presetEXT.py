@@ -1,6 +1,6 @@
 op = op  # pylint:disable=invalid-name,used-before-assignment
 root = root  # pylint:disable=invalid-name,used-before-assignment
-
+TDJ = op.TDModules.mod.TDJSON
 
 class PresetEXT():
 
@@ -35,8 +35,8 @@ class PresetEXT():
         return
 
     def placeNodeUnder(self, refOp, targetOp):
-        targetOp.nodeX = refOp.nodeX
-        targetOp.nodeY = refOp.nodeY - refOp.nodeHeight - 20
+            targetOp.nodeX = refOp.nodeX
+            targetOp.nodeY = refOp.nodeY - refOp.nodeHeight - 20
 
     def Checkpardifs(self):
         self.task = 'FinishCheckParDifs'
@@ -69,7 +69,8 @@ class PresetEXT():
         return
 
     
-    def GenerateControls(self, index=0):
+    def Generatecontrols(self, index=0):
+        self.print('Generatecontrols')
 
         self.presetDict[str(index)] = {}
 
@@ -82,31 +83,54 @@ class PresetEXT():
 
             if i == 0:
                 continue
+
+            # test only on row 1
+            # if i != 1:
+            #     continue
+
             targetName = row[nameIndex].val
             targetPar = targetName.split(':')[1]
             targetOpPath = targetName.split(':')[0]
             targetOp = op(targetOpPath)
             rangeMax = row[evalIndex].val
-            rangeMin = row[preEvalIndex] if row[preEvalIndex].val != '' else row[defaultIndex]
+            rangeMin = row[preEvalIndex] if row[preEvalIndex].val != '' else row[defaultIndex].val
 
-            # print(targetPar, targetOp)
+            
             self.presetDict[str(index)][targetName] = {
                 'par': targetPar,
                 'op': targetOp,
                 'rangeMax': rangeMax,
                 'rangeMin': rangeMin
             }
-            targetDict = self.presetDict[targetName]
+            targetDict = self.presetDict[str(index)][targetName]
 
             midiSelect = targetOp.parent().loadTox( root.var('TOUCH') + '/components/midiSelect.tox')
-            midiSelect.par.Index = index
-            midiSelect.par.Torange1 = rangeMin
-            midiSelect.par.Torange2 = rangeMax
-            
-            
             targetDict['midiSelect'] = midiSelect
+            self.placeNodeUnder( targetOp, midiSelect )
+            midiSelect.par.Index = index
+            midiSelect.par.Torange1.val = float(rangeMin)
+            midiSelect.par.Torange2.val = float(rangeMax)
 
-        
+            # export null to target parameter
+            # set select channel rename to 'op:par'
+            midiSelect.op('select2').par.renameto = targetName.split(targetOp.parent().path + '/')[1]
+            
+            # turn export mode on target par
+            targetOp.pars(targetPar)[0].mode = ParMode.EXPORT
+            targetOp.tags.add( 'preset{}'.format(index) )
+
+            
+        return
+
+    def Removepreset(self, index=0):
+
+        for k, v in self.presetDict[str(index)].items():
+            for tKey, tValue in self.presetDict[str(index)][k].items():
+                if tKey == 'midiSelect':
+                    tValue.destroy()
+                if tKey == 'op':
+                    tValue.tag.remove('preset{}'.format(index))
+
         return
 
 
@@ -131,6 +155,7 @@ class PresetEXT():
         if self.Me.fetch('Dev'):
             self.print('dev mode on')
             self.CreateMidiConstant = self.createMidiConstant
+            self.PresetDict = self.presetDict
         else:
             self.print('dev mode off')
         return
