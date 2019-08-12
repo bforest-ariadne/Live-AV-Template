@@ -207,14 +207,14 @@ class PresetEXT():
         for k, v in self.presetDict[str(index)].items():
             for tKey, tValue in self.presetDict[str(index)][k].items():
                 if tKey == 'midiSelect':
-                    tValue.destroy()
+                    if isinstance(tValue, baseCOMP):
+                        tValue.destroy()
                 if tKey == 'op':
                     if 'preset{}'.format(index) in tValue.tags:
                         tValue.tags.remove('preset{}'.format(index))
             v['op'].pars( v['par'] )[0].mode = ParMode.CONSTANT
         
         self.presetDict[str(index)] = {}
-
         return
 
 
