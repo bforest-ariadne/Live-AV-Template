@@ -59,6 +59,17 @@ class PresetEXT():
 
         return
     
+    def FinishSetInitialState(self):
+        self.print('FinishSetInitialState')
+        self.task = 'Empty'
+        
+        self.initialState = self.Me.op('state0')
+        self.currentState = self.Me.op('currentParState')
+
+        self.initialState.clear()
+        self.initialState.copy(self.currentState)
+        return
+    
     def OnAllSceneParsChange(self):
         self.Me.op('allScenePars').clear()
         self.Me.op('allScenePars').copy( self.Me.op('parameter_allScene') )
@@ -161,18 +172,6 @@ class PresetEXT():
 
     def Empty(self):
         self.print('empth task')
-        return
-
-    def FinishSetInitialState(self):
-        self.print('FinishSetInitialState')
-        self.task = 'Empty'
-        
-        self.initialState = self.Me.op('state0')
-        self.currentState = self.Me.op('currentParState')
-
-        
-        self.initialState.clear()
-        self.initialState.copy(self.currentState)
         return
 
 
