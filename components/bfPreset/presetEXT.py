@@ -13,6 +13,7 @@ class PresetEXT():
         self.task = 'Empty'
         self.parDifOp = self.Me.op('parDif')
         self.presetDict = {}
+        self.PresetIndex = 0
 
         self.print('init')
         self.Dev()
@@ -25,8 +26,6 @@ class PresetEXT():
         if children == []:
             print('create midi')
             self.Midi = self.parent.create(constantCHOP, 'midi')
-            # self.Midi.nodeX = self.Me.nodeX
-            # self.Midi.nodeY = self.Me.nodeY - self.Me.nodeHeight - 20
             self.placeNodeUnder(self.Me, self.Midi)
             self.parent.par.iopshortcut2 = 'midi'
             self.parent.par.iop2 = self.Midi.path
@@ -38,11 +37,11 @@ class PresetEXT():
             targetOp.nodeX = refOp.nodeX
             targetOp.nodeY = refOp.nodeY - refOp.nodeHeight - 20
 
-    def Checkpardifs(self):
+    def Checkpardifs(self, index=0):
         self.task = {
             'operator': self,
             'method': 'FinishCheckParDifs',
-            'args': False
+            'args': {'index': index}  
             }
         
         self.Me.op('datexec_allScene').par.active = True
@@ -50,14 +49,19 @@ class PresetEXT():
 
         return
 
-    def FinishCheckParDifs(self):
+    def FinishCheckParDifs(self, index=0):
         self.print('FinishCheckParDifs')
-        self.task = 'Empty'
+        self.task = {
+            'operator': self,
+            'method': 'Generatecontrols',
+            'args': {'index': index}    
+        }
         self.Me.op('script_findDif').par.Compare.pulse()
         
         return
 
     def Setinitialstate(self, index=0):
+        self.print('Setinitialstate')
         self.task = {
             'operator': self,
             'method': 'FinishSetInitialState',
@@ -70,7 +74,6 @@ class PresetEXT():
     
     def FinishSetInitialState(self, index=0):
         self.print('FinishSetInitialState')
-        self.task = 'Empty'
         
         self.initialState = self.Me.op('state0')
         self.currentState = self.Me.op('currentParState')
@@ -88,6 +91,11 @@ class PresetEXT():
         self.callback(self.task)
         return
 
+    def OnFindDif(self):
+        self.print('OnFindDif')
+        self.callback(self.task)
+        return
+
     
     def Generatecontrols(self, index=0):
         self.print('Generatecontrols')
@@ -95,6 +103,9 @@ class PresetEXT():
         # create dict for index if doesnt arleady exist
         if self.presetDict.get(str(index), None ) is None:
             self.presetDict[str(index)] = {}
+
+        if self.Midi.pars('name{}'.format(index))[0].val == '':
+            self.Midi.pars('name{}'.format(index))[0].val = 'preset{}'.format(index)
 
         nameIndex = self.parDifOp.findCells('name')[0].col
         evalIndex = self.parDifOp.findCells('eval')[0].col
@@ -166,11 +177,13 @@ class PresetEXT():
                     self.placeNodeUnder( midiSelectParent, midiSelect )
             else:
                 targetOp.tags.add( 'preset{}'.format(index) )
+        self.task = {'operator': self, 'method': 'Empty', 'args': False}
         self.Setinitialstate(index=index)
         return
 
     def Removepreset(self, index=0):
 
+        # self.Midi.pars('value{}'.format(index))[0].val = 0
         for k, v in self.presetDict[str(index)].items():
             for tKey, tValue in self.presetDict[str(index)][k].items():
                 if tKey == 'midiSelect':
@@ -186,7 +199,8 @@ class PresetEXT():
 
 
     def Empty(self):
-        self.print('empth task')
+        self.print('empty task')
+        debug()
         return
 
 
@@ -201,6 +215,23 @@ class PresetEXT():
 
     def Test(self):
         self.print('test extension')
+        return
+
+    def Presetindex(self):
+        self.PresetIndex = self.Me.par.Presetindex.val
+        return
+
+    def Setinit(self):
+        self.Setinitialstate()
+        return
+
+    def Addpreset(self):
+
+        self.Checkpardifs(index=self.PresetIndex)
+        return
+
+    def Remove(self):
+        self.Removepreset(index=self.PresetIndex)
         return
 
     def OnPulse(self, par):
@@ -235,6 +266,7 @@ class PresetEXT():
                 else:
                     if callable(function):
                         function()
+                # self.task = {'operator': self, 'method': 'Empty', 'args': False}
             else:
                 self.print('callback no fire')
                 self.print('operator: ' + config['operator'])
