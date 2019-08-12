@@ -39,7 +39,12 @@ class PresetEXT():
             targetOp.nodeY = refOp.nodeY - refOp.nodeHeight - 20
 
     def Checkpardifs(self):
-        self.task = 'FinishCheckParDifs'
+        self.task = {
+            'operator': self,
+            'method': 'FinishCheckParDifs',
+            'args': False
+            }
+        
         self.Me.op('datexec_allScene').par.active = True
         self.Me.op('parameter_allScene').bypass = False
 
@@ -52,14 +57,18 @@ class PresetEXT():
         
         return
 
-    def Setinitialstate(self):
-        self.task = 'FinishSetInitialState'
+    def Setinitialstate(self, index=0):
+        self.task = {
+            'operator': self,
+            'method': 'FinishSetInitialState',
+            'args': {'index': index}    
+        }
         self.Me.op('datexec_allScene').par.active = True
         self.Me.op('parameter_allScene').bypass = False
 
         return
     
-    def FinishSetInitialState(self):
+    def FinishSetInitialState(self, index=0):
         self.print('FinishSetInitialState')
         self.task = 'Empty'
         
@@ -76,19 +85,23 @@ class PresetEXT():
         self.Me.op('parameter_allScene').bypass = True
         self.Me.op('datexec_allScene').par.active = False
 
-        self.callback({'operator': self, 'method': self.task})
+        self.callback(self.task)
         return
 
     
     def Generatecontrols(self, index=0):
         self.print('Generatecontrols')
 
-        self.presetDict[str(index)] = {}
+        # create dict for index if doesnt arleady exist
+        if self.presetDict.get(str(index), None ) is None:
+            self.presetDict[str(index)] = {}
 
         nameIndex = self.parDifOp.findCells('name')[0].col
         evalIndex = self.parDifOp.findCells('eval')[0].col
         preEvalIndex = self.parDifOp.findCells('prevEval')[0].col
         defaultIndex = self.parDifOp.findCells('default')[0].col
+
+        presetLen =  len(self.presetDict[str(index)])
         
         for i, row in enumerate(self.parDifOp.rows()):
 
@@ -105,19 +118,19 @@ class PresetEXT():
             targetOp = op(targetOpPath)
             rangeMax = row[evalIndex].val
             rangeMin = row[preEvalIndex] if row[preEvalIndex].val != '' else row[defaultIndex].val
-
+            presetIndex = i - 1 + presetLen
             
             self.presetDict[str(index)][targetName] = {
                 'par': targetPar,
                 'op': targetOp,
                 'rangeMax': rangeMax,
                 'rangeMin': rangeMin,
-                'parDictIndex': i
+                'parDictIndex': presetIndex
             }
             targetDict = self.presetDict[str(index)][targetName]
 
             midiSelect = targetOp.parent().loadTox( root.var('TOUCH') + '/components/midiSelect.tox')
-            midiSelect.name = 'midiSelect{}_{}'.format(index, i)
+            midiSelect.name = 'midiSelect{}_{}'.format(index, presetIndex)
             targetDict['midiSelect'] = midiSelect
             self.placeNodeUnder( targetOp, midiSelect )
             midiSelect.par.Index = index
@@ -153,6 +166,7 @@ class PresetEXT():
                     self.placeNodeUnder( midiSelectParent, midiSelect )
             else:
                 targetOp.tags.add( 'preset{}'.format(index) )
+        self.Setinitialstate(index=index)
         return
 
     def Removepreset(self, index=0):
@@ -164,6 +178,7 @@ class PresetEXT():
                 if tKey == 'op':
                     if 'preset{}'.format(index) in tValue.tags:
                         tValue.tags.remove('preset{}'.format(index))
+            v['op'].pars( v['par'] )[0].mode = ParMode.CONSTANT
         
         self.presetDict[str(index)] = {}
 
@@ -213,8 +228,13 @@ class PresetEXT():
         if config['operator'] and config['method']:
             if hasattr(config['operator'], config['method']):
                 function = getattr(config['operator'], config['method'])
-                if callable(function):
-                    function()
+                if config['args']:
+                    kwargs = config['args']
+                    if callable(function):
+                        function(**kwargs)
+                else:
+                    if callable(function):
+                        function()
             else:
                 self.print('callback no fire')
                 self.print('operator: ' + config['operator'])
