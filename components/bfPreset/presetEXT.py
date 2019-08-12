@@ -154,6 +154,9 @@ class PresetEXT():
             
             # turn export mode on target par
             targetOp.pars(targetPar)[0].mode = ParMode.EXPORT
+
+            midiSelect.op('null1').par.autoexportroot.mode = ParMode.CONSTANT
+            midiSelect.op('null1').par.autoexportroot = targetOp.parent().path
             
             tagName =  'preset{}'.format(index)
             midiSelectIndex = -1
@@ -232,6 +235,11 @@ class PresetEXT():
 
     def Remove(self):
         self.Removepreset(index=self.PresetIndex)
+        return
+
+    def Removeall(self):
+        for k, v in self.presetDict.items():
+            self.Removepreset(index=k)
         return
 
     def OnPulse(self, par):
