@@ -12,7 +12,8 @@ class PresetEXT():
         self.Me.par.Scenename = self.SceneName
         self.task = 'Empty'
         self.parDifOp = self.Me.op('parDif')
-        self.presetDict = {}
+        # self.presetDict = {}
+        self.presetDict = self.Me.fetch('presetDict', {} )
         self.PresetIndex = 0
         self.midiSelBases = []
 
@@ -146,15 +147,17 @@ class PresetEXT():
 
             for midiBase in self.midiSelBases:
                 if midiBase.name == 'midiSelBase_{}'.format(targetOp.name):
-                    midiSelBase = midiBase
+                    if midiBase.fetch('targetOpPath', False) == targetOpPath:
+                        midiSelBase = midiBase
 
             if midiSelBase is None:
-                midiSelBase = targetOp.parent().loadTox( root.var('TOUCH') + '/components/midiSelBase.tox')
+                midiSelBase = targetOp.parent().loadTox( root.var('TOUCH') + '/components/bfPreset/midiSelBase.tox')
                 midiSelBase.name = 'midiSelBase_{}'.format(targetOp.name)
+                midiSelBase.store('targetOpPath', targetOp.path)
                 targetDict['midiSelBase'] = midiSelBase
                 self.midiSelBases.append(midiSelBase)
 
-            midiSelect = midiSelBase.loadTox( root.var('TOUCH') + '/components/midiSelect.tox')
+            midiSelect = midiSelBase.loadTox( root.var('TOUCH') + '/components/bfPreset/midiSelect.tox')
             midiSelect.name = 'midiSelect{}_{}'.format(index, presetIndex)
             targetDict['midiSelect'] = midiSelect
             self.placeNodeUnder( targetOp, midiSelBase )
@@ -198,6 +201,7 @@ class PresetEXT():
             else:
                 targetOp.tags.add( 'preset{}'.format(index) )
         self.task = {'operator': self, 'method': 'Empty', 'args': False}
+        self.Me.store('presetDict', self.presetDict)
         self.Setinitialstate(index=index)
         return
 
@@ -207,14 +211,15 @@ class PresetEXT():
         for k, v in self.presetDict[str(index)].items():
             for tKey, tValue in self.presetDict[str(index)][k].items():
                 if tKey == 'midiSelect':
-                    if isinstance(tValue, baseCOMP):
-                        tValue.destroy()
+                    tValue.destroy()
                 if tKey == 'op':
                     if 'preset{}'.format(index) in tValue.tags:
                         tValue.tags.remove('preset{}'.format(index))
             v['op'].pars( v['par'] )[0].mode = ParMode.CONSTANT
         
         self.presetDict[str(index)] = {}
+        self.Me.store('presetDict', self.presetDict)
+
         return
 
 
@@ -247,16 +252,20 @@ class PresetEXT():
 
     def Addpreset(self):
 
-        self.Checkpardifs(index=self.PresetIndex)
+        self.Checkpardifs(index=self.Me.par.Presetindex.val)
         return
 
     def Remove(self):
-        self.Removepreset(index=self.PresetIndex)
+        self.Removepreset(index=self.Me.par.Presetindex.val)
         return
 
     def Removeall(self):
         for k, v in self.presetDict.items():
             self.Removepreset(index=k)
+        for midiBase in self.midiSelBases:
+            midiBase.destroy()
+
+        self.midiSelBases = []
         return
 
     def OnPulse(self, par):
