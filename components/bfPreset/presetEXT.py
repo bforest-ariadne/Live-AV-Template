@@ -14,6 +14,7 @@ class PresetEXT():
         self.parDifOp = self.Me.op('parDif')
         self.presetDict = {}
         self.PresetIndex = 0
+        self.midiSelBases = []
 
         self.print('init')
         self.Dev()
@@ -140,13 +141,29 @@ class PresetEXT():
             }
             targetDict = self.presetDict[str(index)][targetName]
 
-            midiSelect = targetOp.parent().loadTox( root.var('TOUCH') + '/components/midiSelect.tox')
+
+            midiSelBase = None
+
+            for midiBase in self.midiSelBases:
+                if midiBase.name == 'midiSelBase_{}'.format(targetOp.name):
+                    midiSelBase = midiBase
+
+            if midiSelBase is None:
+                midiSelBase = targetOp.parent().loadTox( root.var('TOUCH') + '/components/midiSelBase.tox')
+                midiSelBase.name = 'midiSelBase_{}'.format(targetOp.name)
+                targetDict['midiSelBase'] = midiSelBase
+                self.midiSelBases.append(midiSelBase)
+
+            midiSelect = midiSelBase.loadTox( root.var('TOUCH') + '/components/midiSelect.tox')
             midiSelect.name = 'midiSelect{}_{}'.format(index, presetIndex)
             targetDict['midiSelect'] = midiSelect
-            self.placeNodeUnder( targetOp, midiSelect )
+            self.placeNodeUnder( targetOp, midiSelBase )
             midiSelect.par.Index = index
             midiSelect.par.Torange1.val = float(rangeMin)
             midiSelect.par.Torange2.val = float(rangeMax)
+
+            midiSelect.outputConnectors[0].connect( midiSelBase.op('merge1') )
+            midiSelect.outputConnectors[1].connect( midiSelBase.op('merge2') )
 
             # export null to target parameter
             # set select channel rename to 'op:par'
@@ -280,3 +297,20 @@ class PresetEXT():
                 self.print('operator: ' + config['operator'])
                 self.print('method: ' + config['method'])
         return
+    
+    def Search(self, d, key, default=None):
+        """Return a value corresponding to the specified key in the (possibly
+        nested) dictionary d. If there is no item with that key, return
+        default.
+        """
+        stack = [iter(d.items())]
+        while stack:
+            for k, v in stack[-1]:
+                if isinstance(v, dict):
+                    stack.append(iter(v.items()))
+                    break
+                elif k == key:
+                    return v
+            else:
+                stack.pop()
+        return default
