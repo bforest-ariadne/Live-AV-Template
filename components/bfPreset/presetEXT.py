@@ -30,7 +30,8 @@ class PresetEXT():
             self.Midi = self.parent.create(constantCHOP, 'midi')
             self.placeNodeUnder(self.Me, self.Midi)
             self.parent.par.iopshortcut2 = 'midi'
-            self.parent.par.iop2 = self.Midi.path
+            self.parent.par.iop2.expr = "me.path+'/midi'"
+            self.parent.par.iop2.mode = ParMode.EXPRESSION
         elif len(children) == 1:
             self.Midi = children[0]
         return
