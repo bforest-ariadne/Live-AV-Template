@@ -25,6 +25,7 @@ class SceneExtension():
         self.perform = op('/Perform')
         if len(self.perform.fetch('Scenes')) > 0:
             if self.name != 'blank':
+                self.Index = self.Me.digits
                 self.Index = self.perform.fetch('Scenes').index(self.Me)
             else:
                 self.Index = -1
