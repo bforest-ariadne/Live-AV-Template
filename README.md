@@ -21,4 +21,8 @@ The system control is a python api via extensions which can be controlled by cus
 ### Calibrate - MODE
   A mode which displays a calibration grid and enables corner pin calibration which will be applied to all modes. Corner pins can be adjusted via their corresponding custom parameters. The reset parameter will reset all corner pins.
   
- 
+### Controls
+  A UI for controlling the performanc system. Can run in a separate TD instance on the same machine or any machine on the local network. The Controls node contains UI for the Out node, Perform node and Calibration node. The UI state is updated in realtime via UDP multicast.
+  
+### IO
+  A node which contains all ingoing and outgoign data. Inside this node there is a base_com node for controlling UDP multicast communication with the Controls node and and Audio node which handles audio input and analysis.
