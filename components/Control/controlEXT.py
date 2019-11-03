@@ -136,8 +136,8 @@ class ControlExtension():
         target = parDict['op_name'][:-1]
         msg = {
             'messagekind'	: "ApplyParVals",
-            'target'		: op.Com.Hostname,
-            'sender'		: op.Com.Hostname,
+            'target'		: op.ControlCom.Hostname,
+            'sender'		: op.ControlCom.Hostname,
             'output'		: None,
             'parameter'		: None,
             'value'			: {
